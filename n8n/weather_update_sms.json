@@ -20,7 +20,7 @@
     },
     {
       "parameters": {
-        "url": "http://localhost:5000/api/farms",
+        "url": "http://host.docker.internal:5000/api/farms",
         "options": {}
       },
       "id": "node_fetch_farms",
