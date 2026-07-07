@@ -68,10 +68,8 @@ Now, open your web browser and go to: **`http://localhost:3000`** to see your ap
 ## ⚙️ Step 3: Setting Up n8n (Visual Automation)
 
 1. Open your browser and go to `http://localhost:5678`.
-2. Log in using:
-   - **Username**: `admin`
-   - **Password**: `adminpassword`
-3. Click on **Workflows** -> **Add Workflow** -> **Import from File**.
+2. **First-Time Setup**: Because it is the first time n8n is running on your machine, it will display a **"Set up owner account"** screen. Simply enter your email and set any password you like to create your local n8n account.
+3. Once logged in, click on **Workflows** in the sidebar -> click **Add Workflow** (or **New**) -> click the three dots icon in the top right -> select **Import from File**.
 4. Choose the [weather_update_sms.json](file:///c:/Web%20Devlopment/BuidWithAiHackathon/n8n/weather_update_sms.json) file from the `n8n/` folder in your project directory.
 5. Double-click the **Gemini** or **SMS** nodes inside n8n to enter your API keys.
 6. Click **Active** in the top right to start the automation.
