@@ -20,7 +20,16 @@
     },
     {
       "parameters": {
-        "url": "http://host.docker.internal:5000/api/farms",
+        "url": "http://host.docker.internal:5000/api/farms/active-list",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-n8n-api-key",
+              "value": "={{$env.JWT_SECRET}}"
+            }
+          ]
+        },
         "options": {}
       },
       "id": "node_fetch_farms",
