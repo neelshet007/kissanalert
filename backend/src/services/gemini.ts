@@ -53,15 +53,7 @@ Respond in strict JSON format:
 }`;
 
   if (!apiKey || !aiClient) {
-    // Fallback Mock Response
-    return {
-      recommendedCrop: params.soilType.toLowerCase().includes('black') ? 'Cotton' : 'Rice (Paddy)',
-      confidenceScore: 0.88,
-      reasoning: `Based on your soil parameters (pH: ${params.soilReport.ph}) and Sowing Season (${params.season}), the soil contains favorable nitrogen and organic carbon. Since groundwater is ${params.groundwater}, this crop is highly optimal.`,
-      waterRequirement: params.groundwater === 'High' ? 'Medium to High' : 'Low to Medium',
-      expectedYield: '15-22 Quintals per acre',
-      riskLevel: 'Low'
-    };
+    throw new Error('Gemini API Key is not configured. Please set GEMINI_API_KEY in backend/.env file.');
   }
 
   try {
@@ -72,16 +64,9 @@ Respond in strict JSON format:
     });
     const responseText = result.response.text();
     return JSON.parse(responseText);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Gemini crop recommendation error:', error);
-    return {
-      recommendedCrop: 'Wheat',
-      confidenceScore: 0.75,
-      reasoning: 'Fallback recommendation due to AI API limit or error. Suitable for typical Indian winter sowing.',
-      waterRequirement: 'Medium',
-      expectedYield: '12-18 Quintals per acre',
-      riskLevel: 'Medium'
-    };
+    throw new Error(`Gemini crop recommendation failed: ${error.message || error}`);
   }
 }
 
@@ -104,16 +89,7 @@ Respond in strict JSON format:
 }`;
 
   if (!apiKey || !aiClient) {
-    // Fallback Mock Response
-    return {
-      diseaseName: 'Tomato Early Blight',
-      confidenceScore: 0.85,
-      severity: 'MEDIUM' as const,
-      treatment: 'Remove infected lower leaves. Avoid overhead watering. Apply copper-based fungicide if needed.',
-      suggestedFertilizer: 'Balanced N-P-K (10-10-10) with micronutrients',
-      suggestedPesticide: 'Chlorothalonil or Copper Fungicide',
-      expertEscalationRequired: false
-    };
+    throw new Error('Gemini API Key is not configured. Please set GEMINI_API_KEY in backend/.env file.');
   }
 
   try {
@@ -129,17 +105,9 @@ Respond in strict JSON format:
     ]);
     const responseText = result.response.text();
     return JSON.parse(responseText);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Gemini Disease Detection error:', error);
-    return {
-      diseaseName: 'Suspected Leaf Spot',
-      confidenceScore: 0.6,
-      severity: 'LOW' as const,
-      treatment: 'Keep the field clean and rotate crops. Limit humidity around the crop.',
-      suggestedFertilizer: 'Organic Compost',
-      suggestedPesticide: 'Neem Oil spray',
-      expertEscalationRequired: true
-    };
+    throw new Error(`Gemini disease detection failed: ${error.message || error}`);
   }
 }
 
@@ -158,10 +126,7 @@ Respond in strict JSON format:
 }`;
 
   if (!apiKey || !aiClient) {
-    return {
-      englishResponse: `To control leaf turning yellow, check soil moisture and add nitrogen fertilizer.`,
-      translatedResponse: `पत्तियों के पीले होने को रोकने के लिए, मिट्टी की नमी की जांच करें और नाइट्रोजन उर्वरक डालें।`
-    };
+    throw new Error('Gemini API Key is not configured. Please set GEMINI_API_KEY in backend/.env file.');
   }
 
   try {
@@ -171,12 +136,9 @@ Respond in strict JSON format:
       generationConfig: { responseMimeType: 'application/json' }
     });
     return JSON.parse(result.response.text());
-  } catch (error) {
+  } catch (error: any) {
     console.error('Gemini Voice Assistant error:', error);
-    return {
-      englishResponse: 'Please consult the local agricultural officer for crop leaf yellowing issues.',
-      translatedResponse: 'कृपया फसल की पत्तियों के पीले होने की समस्या के लिए स्थानीय कृषि अधिकारी से संपर्क करें।'
-    };
+    throw new Error(`Gemini voice assistant query failed: ${error.message || error}`);
   }
 }
 
@@ -198,14 +160,7 @@ Respond in strict JSON format:
 }`;
 
   if (!apiKey || !aiClient) {
-    // Fallback Mock Soil report values
-    return {
-      ph: 6.7,
-      nitrogen: 115.0,
-      phosphorus: 33.5,
-      potassium: 225.0,
-      organicCarbon: 0.62
-    };
+    throw new Error('Gemini API Key is not configured. Please set GEMINI_API_KEY in backend/.env file.');
   }
 
   try {
@@ -221,15 +176,9 @@ Respond in strict JSON format:
     ]);
     const responseText = result.response.text();
     return JSON.parse(responseText);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Gemini Soil Extraction error:', error);
-    return {
-      ph: 6.5,
-      nitrogen: 110.0,
-      phosphorus: 32.0,
-      potassium: 220.0,
-      organicCarbon: 0.58
-    };
+    throw new Error(`Gemini soil report extraction failed: ${error.message || error}`);
   }
 }
 

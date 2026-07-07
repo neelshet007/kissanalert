@@ -13,7 +13,7 @@ import axios from 'axios';
 
 export default function FarmerDashboard() {
   const router = useRouter();
-  const { user, currentLanguage, setLanguage, logout } = useStore();
+  const { user, token, currentLanguage, setLanguage, logout } = useStore();
   const t = translations[currentLanguage] || translations.en;
 
   const [farms, setFarms] = useState<any[]>([]);
@@ -65,6 +65,18 @@ export default function FarmerDashboard() {
   const [diseaseLoading, setDiseaseLoading] = useState(false);
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const cached = localStorage.getItem('kisan_farms');
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          if (parsed && parsed.length > 0) {
+            setFarms(parsed);
+            setSelectedFarm(parsed[0]);
+          }
+        } catch (e) {}
+      }
+    }
     if (!user) {
       router.push('/auth/login');
       return;
@@ -75,14 +87,27 @@ export default function FarmerDashboard() {
   const fetchFarms = async () => {
     try {
       const response = await axios.get('http://localhost:5000/api/farms', {
-        headers: { Authorization: `Bearer mock-jwt-token` }
+        headers: { Authorization: `Bearer ${token || 'mock-jwt-token'}` }
       });
       setFarms(response.data);
       if (response.data.length > 0) {
         setSelectedFarm(response.data[0]);
+        localStorage.setItem('kisan_farms', JSON.stringify(response.data));
       }
     } catch (_) {
-      // Mock Fallback
+      if (typeof window !== 'undefined') {
+        const cached = localStorage.getItem('kisan_farms');
+        if (cached) {
+          try {
+            const parsed = JSON.parse(cached);
+            if (parsed && parsed.length > 0) {
+              setFarms(parsed);
+              setSelectedFarm(parsed[0]);
+              return;
+            }
+          } catch (e) {}
+        }
+      }
       const mockFarms = [
         {
           id: 'mock-farm-1',
@@ -112,7 +137,7 @@ export default function FarmerDashboard() {
     try {
       // Weather
       const weatherRes = await axios.get(`http://localhost:5000/api/farms/${selectedFarm.id}/weather`, {
-        headers: { Authorization: `Bearer mock-jwt-token` }
+        headers: { Authorization: `Bearer ${token || 'mock-jwt-token'}` }
       });
       setWeatherAlert(weatherRes.data);
     } catch (_) {
@@ -141,10 +166,12 @@ export default function FarmerDashboard() {
     e.preventDefault();
     try {
       const response = await axios.post('http://localhost:5000/api/farms', farmForm, {
-        headers: { Authorization: `Bearer mock-jwt-token` }
+        headers: { Authorization: `Bearer ${token || 'mock-jwt-token'}` }
       });
-      setFarms([...farms, response.data]);
+      const updated = [...farms, response.data];
+      setFarms(updated);
       setSelectedFarm(response.data);
+      localStorage.setItem('kisan_farms', JSON.stringify(updated));
       setShowCreateFarm(false);
     } catch (_) {
       const mockNew = {
@@ -152,8 +179,10 @@ export default function FarmerDashboard() {
         ...farmForm,
         soilReports: []
       };
-      setFarms([...farms, mockNew]);
+      const updated = [...farms, mockNew];
+      setFarms(updated);
       setSelectedFarm(mockNew);
+      localStorage.setItem('kisan_farms', JSON.stringify(updated));
       setShowCreateFarm(false);
     }
   };
@@ -175,30 +204,43 @@ export default function FarmerDashboard() {
         const response = await axios.post(`http://localhost:5000/api/farms/${selectedFarm.id}/soil-report-image`, formData, {
           headers: { 
             'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer mock-jwt-token` 
+            Authorization: `Bearer ${token || 'mock-jwt-token'}` 
           }
         });
+        
+        const updatedFarm = {
+          ...selectedFarm,
+          soilReports: [response.data.soilReport, ...(selectedFarm.soilReports || [])],
+          cropRecommendations: [response.data.cropRec, ...(selectedFarm.cropRecommendations || [])]
+        };
+        const updatedFarms = farms.map(f => f.id === selectedFarm.id ? updatedFarm : f);
+        setFarms(updatedFarms);
+        setSelectedFarm(updatedFarm);
+        localStorage.setItem('kisan_farms', JSON.stringify(updatedFarms));
+
         setCropRec(response.data.cropRec);
         setShowSoilReport(false);
       } else {
         const response = await axios.post(`http://localhost:5000/api/farms/${selectedFarm.id}/soil-report`, soilForm, {
-          headers: { Authorization: `Bearer mock-jwt-token` }
+          headers: { Authorization: `Bearer ${token || 'mock-jwt-token'}` }
         });
+        
+        const updatedFarm = {
+          ...selectedFarm,
+          soilReports: [response.data.soilReport, ...(selectedFarm.soilReports || [])],
+          cropRecommendations: [response.data.cropRec, ...(selectedFarm.cropRecommendations || [])]
+        };
+        const updatedFarms = farms.map(f => f.id === selectedFarm.id ? updatedFarm : f);
+        setFarms(updatedFarms);
+        setSelectedFarm(updatedFarm);
+        localStorage.setItem('kisan_farms', JSON.stringify(updatedFarms));
+
         setCropRec(response.data.cropRec);
         setShowSoilReport(false);
       }
-    } catch (_) {
-      // Mock Crop Rec response
-      setCropRec({
-        recommendedCrop: soilForm.ph > 6 ? 'Cotton' : 'Paddy (Rice)',
-        confidenceScore: 0.91,
-        reasoning: 'The soil parameters show excellent potassium levels and moderate pH, suitable for cotton roots.',
-        waterRequirement: 'Medium',
-        expectedYield: '18-24 Quintals per acre',
-        riskLevel: 'Low',
-        season: soilForm.season
-      });
-      setShowSoilReport(false);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to submit soil report: " + (err.response?.data?.error || err.message));
     } finally {
       setSoilReportImageLoading(false);
     }
@@ -230,24 +272,68 @@ export default function FarmerDashboard() {
   };
 
 
-  const handleVoiceQuery = async () => {
-    if (!voiceQuery) return;
+  const [isListening, setIsListening] = useState(false);
+
+  const handleVoiceQuery = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Speech recognition is not supported in this browser. Please type your query.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = currentLanguage === 'hi' ? 'hi-IN' : currentLanguage === 'te' ? 'te-IN' : currentLanguage === 'mr' ? 'mr-IN' : currentLanguage === 'ta' ? 'ta-IN' : 'en-IN';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      setVoiceQuery("Listening... Speak now...");
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error(event.error);
+      setIsListening(false);
+      setVoiceQuery("");
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.onresult = (event: any) => {
+      const speechToText = event.results[0][0].transcript;
+      setVoiceQuery(speechToText);
+      submitVoiceQuery(speechToText);
+    };
+
+    recognition.start();
+  };
+
+  const submitVoiceQuery = async (queryText: string) => {
+    if (!queryText) return;
     setVoiceLoading(true);
     try {
       const response = await axios.post('http://localhost:5000/api/voice/query', {
         farmId: selectedFarm.id,
-        transcription: voiceQuery,
+        transcription: queryText,
         language: currentLanguage
       }, {
         headers: { Authorization: `Bearer mock-jwt-token` }
       });
       setVoiceAnswer(response.data.aiResponseText);
     } catch (_) {
-      // Voice query mock translations responses
       if (currentLanguage === 'hi') {
         setVoiceAnswer('पत्तियों के पीले होने को रोकने के लिए, मिट्टी में थोड़ा नाइट्रोजन मिलाएँ और समय पर सिंचाई करें।');
       } else if (currentLanguage === 'te') {
         setVoiceAnswer('ఆకులు పసుపు రంగులోకి మారకుండా ఉండటానికి, సేంద్రీయ నత్రజని ఎరువులు వేయండి.');
+      } else {
+        setVoiceAnswer('To treat leaf yellowing, ensure proper nitrogen levels and check the soil humidity.');
+      }
+    } finally {
+      setVoiceLoading(false);
+    }
+  };�ేంద్రీయ నత్రజని ఎరువులు వేయండి.');
       } else {
         setVoiceAnswer('To treat leaf yellowing, ensure proper nitrogen levels and check the soil humidity.');
       }
@@ -270,24 +356,25 @@ export default function FarmerDashboard() {
       const response = await axios.post('http://localhost:5000/api/diseases/detect', formData, {
         headers: { 
           'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer mock-jwt-token` 
+          Authorization: `Bearer ${token || 'mock-jwt-token'}` 
         }
       });
       
       setDiseaseReport(response.data.report);
+      
+      const updatedFarm = {
+        ...selectedFarm,
+        diseaseReports: [response.data.report, ...(selectedFarm.diseaseReports || [])]
+      };
+      const updatedFarms = farms.map(f => f.id === selectedFarm.id ? updatedFarm : f);
+      setFarms(updatedFarms);
+      setSelectedFarm(updatedFarm);
+      localStorage.setItem('kisan_farms', JSON.stringify(updatedFarms));
+
       alert("AI Disease detection completed successfully! " + (response.data.ticketEscalated ? "Low confidence case escalated to Rythu Seva Kendra." : "Handled completely by AI."));
-    } catch (error: any) {
+    } catch (error) {
       console.error("Failed to run disease diagnosis:", error);
-      // Fallback
-      setDiseaseReport({
-        diseaseName: 'Tomato Early Blight',
-        confidenceScore: 0.88,
-        severity: 'MEDIUM',
-        treatment: 'Apply copper-based fungicides weekly. Uproot and burn infected branches to prevent spreading.',
-        suggestedFertilizer: 'Potassium Nitrate to strengthen cell walls.',
-        suggestedPesticide: 'Mancozeb Fungicide',
-        expertEscalationRequired: true
-      });
+      alert("Failed to analyze crop leaf disease: " + (error.response?.data?.error || error.message));
     } finally {
       setDiseaseLoading(false);
     }

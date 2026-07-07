@@ -9,7 +9,7 @@ import axios from 'axios';
 
 export default function ExpertDashboard() {
   const router = useRouter();
-  const { user, currentLanguage, setLanguage, logout } = useStore();
+  const { user, token, currentLanguage, setLanguage, logout } = useStore();
   const t = translations[currentLanguage] || translations.en;
 
   const [tickets, setTickets] = useState<any[]>([]);
@@ -28,7 +28,7 @@ export default function ExpertDashboard() {
   const fetchTickets = async () => {
     try {
       const response = await axios.get('http://localhost:5000/api/tickets', {
-        headers: { Authorization: `Bearer mock-jwt-token` }
+        headers: { Authorization: `Bearer ${token || 'mock-jwt-token'}` }
       });
       setTickets(response.data);
       if (response.data.length > 0) {
@@ -95,7 +95,7 @@ export default function ExpertDashboard() {
       await axios.post(`http://localhost:5000/api/tickets/${selectedTicket.id}/resolve`, {
         resolutionNotes
       }, {
-        headers: { Authorization: `Bearer mock-jwt-token` }
+        headers: { Authorization: `Bearer ${token || 'mock-jwt-token'}` }
       });
       fetchTickets();
       setResolutionNotes('');

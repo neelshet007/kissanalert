@@ -115,6 +115,15 @@ router.post('/:id/soil-report', authenticateJWT, async (req: AuthRequest, res: a
       },
     });
 
+    // Fetch live weather data for rainfall forecast
+    let rainfall = 15;
+    try {
+      const weatherData = await fetchWeatherData(farm.latitude, farm.longitude);
+      rainfall = weatherData.rainfall;
+    } catch (err) {
+      console.warn('Failed to fetch weather data for recommendation:', err);
+    }
+
     // Fetch crop recommendation from Gemini
     const aiRecommendation = await getCropRecommendation({
       soilReport: {
@@ -125,7 +134,7 @@ router.post('/:id/soil-report', authenticateJWT, async (req: AuthRequest, res: a
         organicCarbon: parseFloat(organicCarbon),
       },
       location: farm.location,
-      rainfallForecast: 15, // standard placeholder or computed
+      rainfallForecast: rainfall,
       groundwater: farm.groundwater,
       season: season || 'Kharif',
       soilType: farm.soilType,
@@ -185,6 +194,15 @@ router.post('/:id/soil-report-image', authenticateJWT, upload.single('image'), a
       },
     });
 
+    // Fetch live weather data for rainfall forecast
+    let rainfall = 15;
+    try {
+      const weatherData = await fetchWeatherData(farm.latitude, farm.longitude);
+      rainfall = weatherData.rainfall;
+    } catch (err) {
+      console.warn('Failed to fetch weather data for recommendation:', err);
+    }
+
     // Fetch crop recommendation from Gemini based on extracted parameters
     const aiRecommendation = await getCropRecommendation({
       soilReport: {
@@ -195,7 +213,7 @@ router.post('/:id/soil-report-image', authenticateJWT, upload.single('image'), a
         organicCarbon: soilReport.organicCarbon,
       },
       location: farm.location,
-      rainfallForecast: 15,
+      rainfallForecast: rainfall,
       groundwater: farm.groundwater,
       season: season || 'Kharif',
       soilType: farm.soilType,

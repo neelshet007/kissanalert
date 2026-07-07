@@ -27,7 +27,7 @@ export default function AdminDashboard() {
     setLoading(true);
     try {
       const response = await axios.get('http://localhost:5000/api/analytics/admin', {
-        headers: { Authorization: `Bearer mock-jwt-token` }
+        headers: { Authorization: `Bearer ${token || 'mock-jwt-token'}` }
       });
       setMetrics(response.data);
     } catch (_) {
