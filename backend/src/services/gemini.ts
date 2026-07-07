@@ -62,7 +62,7 @@ Respond in strict JSON format:
   }
 
   try {
-    const model = aiClient.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = aiClient.getGenerativeModel({ model: 'gemini-2.0-flash' });
     const result = await model.generateContent({
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       generationConfig: { responseMimeType: 'application/json' }
@@ -114,7 +114,7 @@ Respond in strict JSON format:
   }
 
   try {
-    const model = aiClient.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = aiClient.getGenerativeModel({ model: 'gemini-2.0-flash' });
     const result = await model.generateContent([
       prompt,
       {
@@ -162,7 +162,7 @@ Respond in strict JSON format:
   }
 
   try {
-    const model = aiClient.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = aiClient.getGenerativeModel({ model: 'gemini-2.0-flash' });
     const result = await model.generateContent({
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       generationConfig: { responseMimeType: 'application/json' }
@@ -206,7 +206,7 @@ Respond in strict JSON format:
   }
 
   try {
-    const model = aiClient.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = aiClient.getGenerativeModel({ model: 'gemini-2.0-flash' });
     const result = await model.generateContent([
       prompt,
       {

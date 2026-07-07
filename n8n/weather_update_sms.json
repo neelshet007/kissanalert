@@ -67,21 +67,17 @@
     },
     {
       "parameters": {
-        "keepOnlySet": true,
-        "values": {
-          "string": [
-            {
-              "name": "candidates",
-              "value": "=[{\"content\": {\"parts\": [{\"text\": \"Temp is {{$json.current.temperature_2m}}°C and rain is {{$json.current.rain}}mm. Conditions are ideal. Keep soil moisture optimal.\"}]}}]"
-            }
-          ]
-        },
+        "method": "POST",
+        "url": "=https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key={{$env.GEMINI_API_KEY}}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"contents\": [{\"parts\":[{\"text\": \"You are an agricultural advisor. Weather parameters: Temp {{$json.current.temperature_2m}}C, Rain {{$json.current.rain}}mm. Write a 1-sentence simple agricultural sowing/irrigation alert for the farmer.\"}]}]}",
         "options": {}
       },
       "id": "node_gemini_advisory_http",
       "name": "Gemini AI Advisory (HTTP)",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 1,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
       "position": [640, 300]
     },
     {
@@ -90,7 +86,7 @@
         "url": "=https://api.telegram.org/bot{{$env.TELEGRAM_BOT_TOKEN}}/sendMessage",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\"chat_id\": \"{{$env.TELEGRAM_CHAT_ID}}\", \"text\": \"🌱 Kisan Alert Advisory: {{$json.candidates?.[0]?.content?.parts?.[0]?.text || 'Normal weather. Recommended to proceed with planned sowing and light watering.'}}\"}",
+        "jsonBody": "={\"chat_id\": \"{{$env.TELEGRAM_CHAT_ID}}\", \"text\": \"🌱 Kisan Alert Advisory: {{$json.candidates[0].content.parts[0].text}}\"}",
         "options": {}
       },
       "id": "node_telegram_notify",
