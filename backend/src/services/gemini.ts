@@ -3,16 +3,19 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const apiKey = process.env.GEMINI_API_KEY;
+const rawApiKey = process.env.GEMINI_API_KEY;
+const apiKey = rawApiKey ? rawApiKey.replace(/^["']|["']$/g, '') : undefined;
 let aiClient: any = null;
 
 if (apiKey) {
   try {
-    // Initialise GoogleGenerativeAI client
     aiClient = new GoogleGenerativeAI(apiKey);
+    console.log(`🌱 Gemini Client Initialized successfully. Key length: ${apiKey.length}`);
   } catch (err) {
     console.error('Failed to initialize Gemini Client with provided key:', err);
   }
+} else {
+  console.warn('⚠️ Warning: GEMINI_API_KEY is not defined in environment variables.');
 }
 
 /**
