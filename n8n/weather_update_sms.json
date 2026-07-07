@@ -1,5 +1,5 @@
 {
-  "name": "KisanAlert_Weather_Updates_SMS",
+  "name": "KisanAlert_Weather_Updates_Telegram",
   "nodes": [
     {
       "parameters": {
@@ -20,7 +20,7 @@
     },
     {
       "parameters": {
-        "url": "http://localhost:5000/api/farms/active-list",
+        "url": "http://localhost:5000/api/farms",
         "options": {}
       },
       "id": "node_fetch_farms",
@@ -37,11 +37,11 @@
           "parameters": [
             {
               "name": "latitude",
-              "value": "={{$json.latitude}}"
+              "value": "={{$json.latitude || 16.306}}"
             },
             {
               "name": "longitude",
-              "value": "={{$json.longitude}}"
+              "value": "={{$json.longitude || 80.436}}"
             },
             {
               "name": "current",
@@ -58,25 +58,32 @@
     },
     {
       "parameters": {
-        "model": "gemini-1.5-flash",
-        "prompt": "Analyze weather parameters: Temp {{$json.current.temperature_2m}}C, Rain {{$json.current.rain}}mm. Write a 1-sentence localized agricultural advisory for sowing/irrigation.",
+        "method": "POST",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=YOUR_GEMINI_API_KEY",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"contents\": [{\"parts\":[{\"text\": \"You are an agricultural advisor. Weather parameters: Temp {{$json.current.temperature_2m}}C, Rain {{$json.current.rain}}mm. Write a 1-sentence simple agricultural sowing/irrigation alert for the farmer.\"}]}]}",
         "options": {}
       },
-      "id": "node_gemini_advisory",
-      "name": "Gemini AI Advisory",
-      "type": "n8n-nodes-base.googleGemini",
-      "typeVersion": 1,
+      "id": "node_gemini_advisory_http",
+      "name": "Gemini AI Advisory (HTTP)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
       "position": [640, 300]
     },
     {
       "parameters": {
-        "phoneNumber": "={{$json.farmerPhone}}",
-        "message": "Kisan Alert: {{ $json.advisory }}"
+        "method": "POST",
+        "url": "=https://api.telegram.org/botYOUR_TELEGRAM_BOT_TOKEN/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"chat_id\": \"YOUR_TELEGRAM_CHAT_ID\", \"text\": \"🌱 Kisan Alert Advisory: {{$json.candidates[0].content.parts[0].text}}\"}",
+        "options": {}
       },
-      "id": "node_send_sms",
-      "name": "Send SMS (Twilio)",
-      "type": "n8n-nodes-base.twilio",
-      "typeVersion": 1,
+      "id": "node_telegram_notify",
+      "name": "Send Telegram Alert",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
       "position": [820, 300]
     }
   ],
@@ -107,18 +114,18 @@
       "main": [
         [
           {
-            "node": "Gemini AI Advisory",
+            "node": "Gemini AI Advisory (HTTP)",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Gemini AI Advisory": {
+    "Gemini AI Advisory (HTTP)": {
       "main": [
         [
           {
-            "node": "Send SMS (Twilio)",
+            "node": "Send Telegram Alert",
             "type": "main",
             "index": 0
           }

@@ -1,5 +1,5 @@
 {
-  "name": "KisanAlert_Disease_Escalation",
+  "name": "KisanAlert_Disease_Escalation_Telegram",
   "nodes": [
     {
       "parameters": {
@@ -32,27 +32,32 @@
     },
     {
       "parameters": {
-        "fromEmail": "alerts@kisanalert.com",
-        "toEmail": "={{$json.expertEmail}}",
-        "subject": "⚠️ High Severity Crop Disease Escalation",
-        "text": "Hello Expert,\nA ticket has been automatically raised for farmer: {{$json.farmerName}} regarding disease: {{$json.diseaseName}}.\nPlease review immediately on the dashboard: http://localhost:3000/dashboard/expert",
+        "method": "POST",
+        "url": "=https://api.telegram.org/botYOUR_TELEGRAM_BOT_TOKEN/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"chat_id\": \"YOUR_TELEGRAM_CHAT_ID\", \"text\": \"⚠️ High Severity Crop Disease Escalation! Farmer: {{$json.farmerName}} has a suspected case of: {{$json.diseaseName}}. Please review immediately: http://localhost:3000/dashboard/expert\"}",
         "options": {}
       },
-      "id": "node_email_expert",
-      "name": "Notify Expert (Resend)",
-      "type": "n8n-nodes-base.email",
-      "typeVersion": 1,
+      "id": "node_telegram_expert",
+      "name": "Notify Expert (Telegram)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
       "position": [500, 200]
     },
     {
       "parameters": {
-        "message": "Kisan Alert: Your crop concern has been sent to RSK Expert. Check Status: http://localhost:3000/dashboard/farmer",
-        "phoneNumber": "={{$json.farmerPhone}}"
+        "method": "POST",
+        "url": "=https://api.telegram.org/botYOUR_TELEGRAM_BOT_TOKEN/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"chat_id\": \"YOUR_TELEGRAM_CHAT_ID\", \"text\": \"🌱 Kisan Alert: Your crop concern ({{$json.diseaseName}}) has been escalated to an RSK expert. Status check: http://localhost:3000/dashboard/farmer\"}",
+        "options": {}
       },
-      "id": "node_sms_farmer",
-      "name": "Notify Farmer (SMS)",
-      "type": "n8n-nodes-base.twilio",
-      "typeVersion": 1,
+      "id": "node_telegram_farmer",
+      "name": "Notify Farmer (Telegram)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
       "position": [500, 400]
     }
   ],
@@ -72,14 +77,14 @@
       "main": [
         [
           {
-            "node": "Notify Expert (Resend)",
+            "node": "Notify Expert (Telegram)",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Notify Farmer (SMS)",
+            "node": "Notify Farmer (Telegram)",
             "type": "main",
             "index": 0
           }
