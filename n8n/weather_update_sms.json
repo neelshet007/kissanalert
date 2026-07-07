@@ -68,7 +68,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={{$env.GEMINI_API_KEY}}",
+        "url": "=https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={{$env.GEMINI_API_KEY}}",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\"contents\": [{\"parts\":[{\"text\": \"You are an agricultural advisor. Weather parameters: Temp {{$json.current.temperature_2m}}C, Rain {{$json.current.rain}}mm. Write a 1-sentence simple agricultural sowing/irrigation alert for the farmer.\"}]}]}",
