@@ -176,3 +176,57 @@ Respond in strict JSON format:
     };
   }
 }
+
+/**
+ * Extract Soil Report Parameters using Gemini Vision
+ */
+export async function extractSoilReportFromImage(imageBase64: string, mimeType: string = 'image/jpeg') {
+  const prompt = `You are an expert soil chemist. Analyze the provided image of a Soil Health Card or Soil Testing Report.
+Extract the chemical values: pH, Nitrogen (N), Phosphorus (P), Potassium (K), and Organic Carbon.
+If any value is missing or illegible in the card, make an educated agronomic guess based on standard Indian soil profiles.
+
+Respond in strict JSON format:
+{
+  "ph": 0.0,
+  "nitrogen": 0.0,
+  "phosphorus": 0.0,
+  "potassium": 0.0,
+  "organicCarbon": 0.0
+}`;
+
+  if (!apiKey || !aiClient) {
+    // Fallback Mock Soil report values
+    return {
+      ph: 6.7,
+      nitrogen: 115.0,
+      phosphorus: 33.5,
+      potassium: 225.0,
+      organicCarbon: 0.62
+    };
+  }
+
+  try {
+    const model = aiClient.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const result = await model.generateContent([
+      prompt,
+      {
+        inlineData: {
+          data: imageBase64,
+          mimeType
+        }
+      }
+    ]);
+    const responseText = result.response.text();
+    return JSON.parse(responseText);
+  } catch (error) {
+    console.error('Gemini Soil Extraction error:', error);
+    return {
+      ph: 6.5,
+      nitrogen: 110.0,
+      phosphorus: 32.0,
+      potassium: 220.0,
+      organicCarbon: 0.58
+    };
+  }
+}
+

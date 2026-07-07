@@ -1,11 +1,14 @@
 import { Router, Response } from 'express';
+import multer from 'multer';
 import prisma from '../config/db';
 import { authenticateJWT, AuthRequest } from '../middlewares/auth';
-import { getCropRecommendation } from '../services/gemini';
+import { getCropRecommendation, extractSoilReportFromImage } from '../services/gemini';
 import { fetchWeatherData } from '../services/weather';
 import { triggerN8NWebhook } from '../services/n8n';
 
 const router = Router();
+const upload = multer({ limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB limit
+
 
 // GET ALL ACTIVE FARMS FOR n8n CRON ALERTS
 router.get('/active-list', async (req: any, res: any) => {
@@ -147,6 +150,78 @@ router.post('/:id/soil-report', authenticateJWT, async (req: AuthRequest, res: a
     res.status(500).json({ error: error.message });
   }
 });
+
+// UPLOAD SOIL REPORT IMAGE & DETECT parameters (pH, N, P, K)
+router.post('/:id/soil-report-image', authenticateJWT, upload.single('image'), async (req: AuthRequest, res: any) => {
+  try {
+    const { id: farmId } = req.params;
+    const { season } = req.body;
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'Soil report image file is required' });
+    }
+
+    const farm = await prisma.farm.findUnique({ where: { id: farmId } });
+    if (!farm) {
+      return res.status(404).json({ error: 'Farm not found' });
+    }
+
+    // Convert file to base64
+    const base64Image = req.file.buffer.toString('base64');
+    const mimeType = req.file.mimetype;
+
+    // Extract chemical values from image using Gemini Vision
+    const extractedData = await extractSoilReportFromImage(base64Image, mimeType);
+
+    // Save report
+    const soilReport = await prisma.soilReport.create({
+      data: {
+        farmId,
+        ph: parseFloat(extractedData.ph || 6.5),
+        nitrogen: parseFloat(extractedData.nitrogen || 120),
+        phosphorus: parseFloat(extractedData.phosphorus || 35),
+        potassium: parseFloat(extractedData.potassium || 220),
+        organicCarbon: parseFloat(extractedData.organicCarbon || 0.6),
+      },
+    });
+
+    // Fetch crop recommendation from Gemini based on extracted parameters
+    const aiRecommendation = await getCropRecommendation({
+      soilReport: {
+        ph: soilReport.ph,
+        nitrogen: soilReport.nitrogen,
+        phosphorus: soilReport.phosphorus,
+        potassium: soilReport.potassium,
+        organicCarbon: soilReport.organicCarbon,
+      },
+      location: farm.location,
+      rainfallForecast: 15,
+      groundwater: farm.groundwater,
+      season: season || 'Kharif',
+      soilType: farm.soilType,
+    });
+
+    // Save Crop Recommendation
+    const cropRec = await prisma.cropRecommendation.create({
+      data: {
+        farmId,
+        recommendedCrop: aiRecommendation.recommendedCrop,
+        confidenceScore: aiRecommendation.confidenceScore,
+        reasoning: aiRecommendation.reasoning,
+        waterRequirement: aiRecommendation.waterRequirement,
+        expectedYield: aiRecommendation.expectedYield,
+        riskLevel: aiRecommendation.riskLevel,
+        season: season || 'Kharif',
+      },
+    });
+
+    res.status(201).json({ soilReport, cropRec });
+  } catch (error: any) {
+    console.error('Soil extraction route error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 // FETCH CURRENT WEATHER & GENERATE ADVISORY
 router.get('/:id/weather', authenticateJWT, async (req: AuthRequest, res: any) => {

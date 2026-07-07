@@ -46,6 +46,10 @@ export default function FarmerDashboard() {
     season: 'Kharif'
   });
 
+  const [soilUploadMode, setSoilUploadMode] = useState<'image' | 'manual'>('image');
+  const [soilReportImage, setSoilReportImage] = useState<File | null>(null);
+  const [soilReportImageLoading, setSoilReportImageLoading] = useState(false);
+
   // Voice Assistant state
   const [voiceQuery, setVoiceQuery] = useState('');
   const [voiceAnswer, setVoiceAnswer] = useState('');
@@ -156,16 +160,37 @@ export default function FarmerDashboard() {
 
   const handleSoilReport = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSoilReportImageLoading(true);
     try {
-      const response = await axios.post(`http://localhost:5000/api/farms/${selectedFarm.id}/soil-report`, soilForm, {
-        headers: { Authorization: `Bearer mock-jwt-token` }
-      });
-      setCropRec(response.data.cropRec);
-      setShowSoilReport(false);
+      if (soilUploadMode === 'image') {
+        if (!soilReportImage) {
+          alert('Please select a soil report image first');
+          setSoilReportImageLoading(false);
+          return;
+        }
+        const formData = new FormData();
+        formData.append('image', soilReportImage);
+        formData.append('season', soilForm.season);
+
+        const response = await axios.post(`http://localhost:5000/api/farms/${selectedFarm.id}/soil-report-image`, formData, {
+          headers: { 
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer mock-jwt-token` 
+          }
+        });
+        setCropRec(response.data.cropRec);
+        setShowSoilReport(false);
+      } else {
+        const response = await axios.post(`http://localhost:5000/api/farms/${selectedFarm.id}/soil-report`, soilForm, {
+          headers: { Authorization: `Bearer mock-jwt-token` }
+        });
+        setCropRec(response.data.cropRec);
+        setShowSoilReport(false);
+      }
     } catch (_) {
       // Mock Crop Rec response
       setCropRec({
-        recommendedCrop: soilForm.ph > 6 ? 'Cotton' : 'Paddy Rice',
+        recommendedCrop: soilForm.ph > 6 ? 'Cotton' : 'Paddy (Rice)',
         confidenceScore: 0.91,
         reasoning: 'The soil parameters show excellent potassium levels and moderate pH, suitable for cotton roots.',
         waterRequirement: 'Medium',
@@ -174,8 +199,36 @@ export default function FarmerDashboard() {
         season: soilForm.season
       });
       setShowSoilReport(false);
+    } finally {
+      setSoilReportImageLoading(false);
     }
   };
+
+  const handleDetectLocation = () => {
+    if (typeof window !== 'undefined' && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = parseFloat(position.coords.latitude.toFixed(4));
+          const lng = parseFloat(position.coords.longitude.toFixed(4));
+          setFarmForm(prev => ({
+            ...prev,
+            latitude: lat,
+            longitude: lng,
+            location: `Detected Farm (Lat: ${lat}, Lng: ${lng})`
+          }));
+        },
+        () => {
+          setFarmForm(prev => ({
+            ...prev,
+            latitude: 16.3060,
+            longitude: 80.4360,
+            location: "Guntur (Lat: 16.3060, Lng: 80.4360)"
+          }));
+        }
+      );
+    }
+  };
+
 
   const handleVoiceQuery = async () => {
     if (!voiceQuery) return;
@@ -481,7 +534,16 @@ export default function FarmerDashboard() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs uppercase font-bold text-emerald-300">Location</label>
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs uppercase font-bold text-emerald-300">Location</label>
+                    <button
+                      type="button"
+                      onClick={handleDetectLocation}
+                      className="text-[10px] font-black bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 px-2 py-0.5 rounded-lg"
+                    >
+                      📍 Detect Location
+                    </button>
+                  </div>
                   <input
                     type="text"
                     required
@@ -545,77 +607,118 @@ export default function FarmerDashboard() {
               className="bg-[#064e3b] rounded-3xl p-6 w-full max-w-lg space-y-4 border border-emerald-500/20 text-white"
             >
               <h3 className="font-extrabold text-xl">{t.uploadSoil}</h3>
+              
+              {/* Tab Selector */}
+              <div className="grid grid-cols-2 gap-2 p-1 bg-emerald-950/60 rounded-xl border border-emerald-500/10">
+                <button
+                  type="button"
+                  onClick={() => setSoilUploadMode('image')}
+                  className={`py-2 text-xs font-bold rounded-lg transition-all ${soilUploadMode === 'image' ? 'bg-emerald-500 text-[#022c22]' : 'text-emerald-300'}`}
+                >
+                  📄 Upload Report Image
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSoilUploadMode('manual')}
+                  className={`py-2 text-xs font-bold rounded-lg transition-all ${soilUploadMode === 'manual' ? 'bg-emerald-500 text-[#022c22]' : 'text-emerald-300'}`}
+                >
+                  ✏️ Manual Entry
+                </button>
+              </div>
+
               <form onSubmit={handleSoilReport} className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-xs uppercase font-bold text-emerald-300">{t.ph}</label>
-                    <input
-                      type="number"
-                      step="0.1"
-                      required
-                      value={soilForm.ph}
-                      onChange={(e) => setSoilForm({ ...soilForm, ph: parseFloat(e.target.value) })}
-                      className="w-full p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/10 outline-none text-sm text-white"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs uppercase font-bold text-emerald-300">Sowing Season</label>
-                    <select
-                      value={soilForm.season}
-                      onChange={(e) => setSoilForm({ ...soilForm, season: e.target.value })}
-                      className="w-full p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/10 outline-none text-sm text-white focus:ring-0"
-                    >
-                      <option value="Kharif" className="bg-[#022c22]">Kharif (Monsoon)</option>
-                      <option value="Rabi" className="bg-[#022c22]">Rabi (Winter)</option>
-                      <option value="Zaid" className="bg-[#022c22]">Zaid (Summer)</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="space-y-1">
-                    <label className="text-xs uppercase font-bold text-emerald-300">{t.nitrogen}</label>
-                    <input
-                      type="number"
-                      required
-                      value={soilForm.nitrogen}
-                      onChange={(e) => setSoilForm({ ...soilForm, nitrogen: parseFloat(e.target.value) })}
-                      className="w-full p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/10 outline-none text-sm text-white"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs uppercase font-bold text-emerald-300">{t.phosphorus}</label>
-                    <input
-                      type="number"
-                      required
-                      value={soilForm.phosphorus}
-                      onChange={(e) => setSoilForm({ ...soilForm, phosphorus: parseFloat(e.target.value) })}
-                      className="w-full p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/10 outline-none text-sm text-white"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs uppercase font-bold text-emerald-300">{t.potassium}</label>
-                    <input
-                      type="number"
-                      required
-                      value={soilForm.potassium}
-                      onChange={(e) => setSoilForm({ ...soilForm, potassium: parseFloat(e.target.value) })}
-                      className="w-full p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/10 outline-none text-sm text-white"
-                    />
-                  </div>
-                </div>
-
                 <div className="space-y-1">
-                  <label className="text-xs uppercase font-bold text-emerald-300">{t.organicCarbon}</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    required
-                    value={soilForm.organicCarbon}
-                    onChange={(e) => setSoilForm({ ...soilForm, organicCarbon: parseFloat(e.target.value) })}
-                    className="w-full p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/10 outline-none text-sm text-white"
-                  />
+                  <label className="text-xs uppercase font-bold text-emerald-300">Sowing Season</label>
+                  <select
+                    value={soilForm.season}
+                    onChange={(e) => setSoilForm({ ...soilForm, season: e.target.value })}
+                    className="w-full p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/10 outline-none text-sm text-white focus:ring-0"
+                  >
+                    <option value="Kharif" className="bg-[#022c22]">Kharif (Monsoon)</option>
+                    <option value="Rabi" className="bg-[#022c22]">Rabi (Winter)</option>
+                    <option value="Zaid" className="bg-[#022c22]">Zaid (Summer)</option>
+                  </select>
                 </div>
+
+                {soilUploadMode === 'image' ? (
+                  <div className="space-y-3">
+                    <div className="border-2 border-dashed border-emerald-500/20 rounded-2xl p-6 text-center space-y-2 hover:border-emerald-400/50 transition-all cursor-pointer">
+                      <CloudRain className="w-8 h-8 mx-auto text-emerald-400" />
+                      <p className="font-bold text-sm">Upload Soil Health Card Photo</p>
+                      <p className="text-xs text-emerald-300/70">AI will automatically read pH, Nitrogen, Phosphorus, Potassium</p>
+                      <input 
+                        type="file" 
+                        required={soilUploadMode === 'image'}
+                        onChange={(e) => setSoilReportImage(e.target.files?.[0] || null)}
+                        className="hidden" 
+                        id="soil-report-image-input"
+                      />
+                      <label htmlFor="soil-report-image-input" className="inline-block mt-2 bg-emerald-950/60 hover:bg-emerald-500 hover:text-[#022c22] border border-emerald-500/20 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer">
+                        {soilReportImage ? `Selected: ${soilReportImage.name}` : 'Browse File'}
+                      </label>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-xs uppercase font-bold text-emerald-300">{t.ph}</label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          required={soilUploadMode === 'manual'}
+                          value={soilForm.ph}
+                          onChange={(e) => setSoilForm({ ...soilForm, ph: parseFloat(e.target.value) })}
+                          className="w-full p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/10 outline-none text-sm text-white"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs uppercase font-bold text-emerald-300">{t.organicCarbon}</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          required={soilUploadMode === 'manual'}
+                          value={soilForm.organicCarbon}
+                          onChange={(e) => setSoilForm({ ...soilForm, organicCarbon: parseFloat(e.target.value) })}
+                          className="w-full p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/10 outline-none text-sm text-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="space-y-1">
+                        <label className="text-xs uppercase font-bold text-emerald-300">{t.nitrogen}</label>
+                        <input
+                          type="number"
+                          required={soilUploadMode === 'manual'}
+                          value={soilForm.nitrogen}
+                          onChange={(e) => setSoilForm({ ...soilForm, nitrogen: parseFloat(e.target.value) })}
+                          className="w-full p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/10 outline-none text-sm text-white"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs uppercase font-bold text-emerald-300">{t.phosphorus}</label>
+                        <input
+                          type="number"
+                          required={soilUploadMode === 'manual'}
+                          value={soilForm.phosphorus}
+                          onChange={(e) => setSoilForm({ ...soilForm, phosphorus: parseFloat(e.target.value) })}
+                          className="w-full p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/10 outline-none text-sm text-white"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs uppercase font-bold text-emerald-300">{t.potassium}</label>
+                        <input
+                          type="number"
+                          required={soilUploadMode === 'manual'}
+                          value={soilForm.potassium}
+                          onChange={(e) => setSoilForm({ ...soilForm, potassium: parseFloat(e.target.value) })}
+                          className="w-full p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/10 outline-none text-sm text-white"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div className="flex gap-2 justify-end pt-4">
                   <button 
@@ -627,9 +730,10 @@ export default function FarmerDashboard() {
                   </button>
                   <button 
                     type="submit" 
+                    disabled={soilReportImageLoading}
                     className="px-6 py-2.5 rounded-xl bg-emerald-500 text-[#022c22] font-black text-xs"
                   >
-                    Get Recommendation
+                    {soilReportImageLoading ? 'Processing...' : 'Get Recommendation'}
                   </button>
                 </div>
               </form>
