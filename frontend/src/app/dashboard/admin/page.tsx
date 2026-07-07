@@ -7,9 +7,11 @@ import { translations } from '../../../utils/translations';
 import { Sprout, LogOut, Users, Cpu, MessageSquare, AlertCircle, RefreshCw, Globe } from 'lucide-react';
 import axios from 'axios';
 
+import { API_BASE_URL } from '../../../utils/api';
+
 export default function AdminDashboard() {
   const router = useRouter();
-  const { user, currentLanguage, setLanguage, logout } = useStore();
+  const { user, currentLanguage, setLanguage, logout, token } = useStore();
   const t = translations[currentLanguage] || translations.en;
 
   const [metrics, setMetrics] = useState<any>(null);
@@ -26,7 +28,7 @@ export default function AdminDashboard() {
   const fetchMetrics = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:5000/api/analytics/admin', {
+      const response = await axios.get(`${API_BASE_URL}/api/analytics/admin`, {
         headers: { Authorization: `Bearer ${token || 'mock-jwt-token'}` }
       });
       setMetrics(response.data);

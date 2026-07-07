@@ -7,6 +7,8 @@ import { translations } from '../../../utils/translations';
 import { Sprout, LogOut, FileText, CheckCircle, Clock, MapPin, Globe } from 'lucide-react';
 import axios from 'axios';
 
+import { API_BASE_URL } from '../../../utils/api';
+
 export default function ExpertDashboard() {
   const router = useRouter();
   const { user, token, currentLanguage, setLanguage, logout } = useStore();
@@ -27,7 +29,7 @@ export default function ExpertDashboard() {
 
   const fetchTickets = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/tickets', {
+      const response = await axios.get(`${API_BASE_URL}/api/tickets`, {
         headers: { Authorization: `Bearer ${token || 'mock-jwt-token'}` }
       });
       setTickets(response.data);
@@ -92,7 +94,7 @@ export default function ExpertDashboard() {
     setLoading(true);
 
     try {
-      await axios.post(`http://localhost:5000/api/tickets/${selectedTicket.id}/resolve`, {
+      await axios.post(`${API_BASE_URL}/api/tickets/${selectedTicket.id}/resolve`, {
         resolutionNotes
       }, {
         headers: { Authorization: `Bearer ${token || 'mock-jwt-token'}` }

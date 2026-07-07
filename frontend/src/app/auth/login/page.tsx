@@ -7,6 +7,8 @@ import { translations } from '../../../utils/translations';
 import { Sprout, ArrowRight, ShieldCheck, Mail, Lock } from 'lucide-react';
 import axios from 'axios';
 
+import { API_BASE_URL } from '../../../utils/api';
+
 export default function LoginPage() {
   const router = useRouter();
   const { currentLanguage, setUser } = useStore();
@@ -37,7 +39,7 @@ export default function LoginPage() {
 
     try {
       // Post to backend login API
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
+      const response = await axios.post(`${API_BASE_URL}/api/auth/login`, {
         email,
         password,
       });

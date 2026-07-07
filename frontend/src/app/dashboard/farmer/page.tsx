@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
+import { API_BASE_URL } from '../../../utils/api';
 
 export default function FarmerDashboard() {
   const router = useRouter();
@@ -86,7 +87,7 @@ export default function FarmerDashboard() {
 
   const fetchFarms = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/farms', {
+      const response = await axios.get(`${API_BASE_URL}/api/farms`, {
         headers: { Authorization: `Bearer ${token || 'mock-jwt-token'}` }
       });
       setFarms(response.data);
@@ -136,7 +137,7 @@ export default function FarmerDashboard() {
     setLoading(true);
     try {
       // Weather
-      const weatherRes = await axios.get(`http://localhost:5000/api/farms/${selectedFarm.id}/weather`, {
+      const weatherRes = await axios.get(`${API_BASE_URL}/api/farms/${selectedFarm.id}/weather`, {
         headers: { Authorization: `Bearer ${token || 'mock-jwt-token'}` }
       });
       setWeatherAlert(weatherRes.data);
@@ -165,7 +166,7 @@ export default function FarmerDashboard() {
   const handleCreateFarm = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5000/api/farms', farmForm, {
+      const response = await axios.post(`${API_BASE_URL}/api/farms`, farmForm, {
         headers: { Authorization: `Bearer ${token || 'mock-jwt-token'}` }
       });
       const updated = [...farms, response.data];
@@ -201,7 +202,7 @@ export default function FarmerDashboard() {
         formData.append('image', soilReportImage);
         formData.append('season', soilForm.season);
 
-        const response = await axios.post(`http://localhost:5000/api/farms/${selectedFarm.id}/soil-report-image`, formData, {
+        const response = await axios.post(`${API_BASE_URL}/api/farms/${selectedFarm.id}/soil-report-image`, formData, {
           headers: { 
             'Content-Type': 'multipart/form-data',
             Authorization: `Bearer ${token || 'mock-jwt-token'}` 
@@ -221,7 +222,7 @@ export default function FarmerDashboard() {
         setCropRec(response.data.cropRec);
         setShowSoilReport(false);
       } else {
-        const response = await axios.post(`http://localhost:5000/api/farms/${selectedFarm.id}/soil-report`, soilForm, {
+        const response = await axios.post(`${API_BASE_URL}/api/farms/${selectedFarm.id}/soil-report`, soilForm, {
           headers: { Authorization: `Bearer ${token || 'mock-jwt-token'}` }
         });
         
@@ -314,7 +315,7 @@ export default function FarmerDashboard() {
     if (!queryText) return;
     setVoiceLoading(true);
     try {
-      const response = await axios.post('http://localhost:5000/api/voice/query', {
+      const response = await axios.post(`${API_BASE_URL}/api/voice/query`, {
         farmId: selectedFarm.id,
         transcription: queryText,
         language: currentLanguage
@@ -353,7 +354,7 @@ export default function FarmerDashboard() {
       formData.append('image', diseaseInput);
       formData.append('farmId', selectedFarm.id);
 
-      const response = await axios.post('http://localhost:5000/api/diseases/detect', formData, {
+      const response = await axios.post(`${API_BASE_URL}/api/diseases/detect`, formData, {
         headers: { 
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${token || 'mock-jwt-token'}` 
