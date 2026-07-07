@@ -1,0 +1,129 @@
+{
+  "name": "KisanAlert_Weather_Updates_SMS",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "value": "0 6 * * *"
+            }
+          ]
+        }
+      },
+      "id": "node_trigger_cron",
+      "name": "Daily 6AM Cron",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:5000/api/farms/active-list",
+        "options": {}
+      },
+      "id": "node_fetch_farms",
+      "name": "Fetch Active Farms",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.open-meteo.com/v1/forecast",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "latitude",
+              "value": "={{$json.latitude}}"
+            },
+            {
+              "name": "longitude",
+              "value": "={{$json.longitude}}"
+            },
+            {
+              "name": "current",
+              "value": "temperature_2m,relative_humidity_2m,rain"
+            }
+          ]
+        }
+      },
+      "id": "node_open_meteo",
+      "name": "Query Open-Meteo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "model": "gemini-1.5-flash",
+        "prompt": "Analyze weather parameters: Temp {{$json.current.temperature_2m}}C, Rain {{$json.current.rain}}mm. Write a 1-sentence localized agricultural advisory for sowing/irrigation.",
+        "options": {}
+      },
+      "id": "node_gemini_advisory",
+      "name": "Gemini AI Advisory",
+      "type": "n8n-nodes-base.googleGemini",
+      "typeVersion": 1,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "phoneNumber": "={{$json.farmerPhone}}",
+        "message": "Kisan Alert: {{ $json.advisory }}"
+      },
+      "id": "node_send_sms",
+      "name": "Send SMS (Twilio)",
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [1050, 300]
+    }
+  ],
+  "connections": {
+    "Daily 6AM Cron": {
+      "main": [
+        [
+          {
+            "node": "Fetch Active Farms",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Active Farms": {
+      "main": [
+        [
+          {
+            "node": "Query Open-Meteo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Open-Meteo": {
+      "main": [
+        [
+          {
+            "node": "Gemini AI Advisory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini AI Advisory": {
+      "main": [
+        [
+          {
+            "node": "Send SMS (Twilio)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -1,0 +1,170 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  FARMER
+  EXPERT
+  ADMIN
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum TicketStatus {
+  OPEN
+  RESOLVED
+  CLOSED
+}
+
+model User {
+  id           String    @id @default(uuid())
+  phone        String?   @unique
+  email        String    @unique
+  passwordHash String
+  name         String
+  role         Role      @default(FARMER)
+  language     String    @default("en")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  farms        Farm[]
+  tickets      Ticket[]  @relation("ExpertTickets")
+  raisedTickets Ticket[] @relation("FarmerTickets")
+  auditLogs    AuditLog[]
+  notifications Notification[]
+}
+
+model Farm {
+  id          String   @id @default(uuid())
+  name        String
+  location    String   // Lat, Lng or Address
+  latitude    Float
+  longitude   Float
+  size        Float    // in acres
+  soilType    String
+  groundwater String   // High, Medium, Low
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  soilReports         SoilReport[]
+  cropRecommendations CropRecommendation[]
+  diseaseReports      DiseaseReport[]
+  weatherAlerts       WeatherAlert[]
+  voiceMessages       VoiceMessage[]
+}
+
+model SoilReport {
+  id             String   @id @default(uuid())
+  farmId         String
+  farm           Farm     @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  ph             Float
+  nitrogen       Float    // mg/kg
+  phosphorus     Float    // mg/kg
+  potassium      Float    // mg/kg
+  organicCarbon  Float    // %
+  testedAt       DateTime @default(now())
+  createdAt      DateTime @default(now())
+}
+
+model CropRecommendation {
+  id               String   @id @default(uuid())
+  farmId           String
+  farm             Farm     @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  recommendedCrop  String
+  confidenceScore  Float
+  reasoning        String   @db.Text
+  waterRequirement String
+  expectedYield    String
+  riskLevel        String
+  season           String
+  createdAt        DateTime @default(now())
+}
+
+model WeatherAlert {
+  id          String   @id @default(uuid())
+  farmId      String
+  farm        Farm     @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  temperature Float
+  humidity    Float
+  rainfall    Float
+  windSpeed   Float
+  advisory    String   @db.Text
+  warning     String?
+  createdAt   DateTime @default(now())
+}
+
+model DiseaseReport {
+  id                 String   @id @default(uuid())
+  farmId             String
+  farm               Farm     @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  imageUrl           String
+  diseaseName        String
+  confidenceScore    Float
+  severity           Severity
+  treatment          String   @db.Text
+  suggestedFertilizer String
+  suggestedPesticide  String
+  expertEscalationRequired Boolean @default(false)
+  createdAt          DateTime @default(now())
+
+  tickets            Ticket[]
+}
+
+model VoiceMessage {
+  id             String   @id @default(uuid())
+  farmId         String
+  farm           Farm     @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  audioUrl       String
+  transcription  String   @db.Text
+  aiResponseText String   @db.Text
+  audioResponseUrl String?
+  createdAt      DateTime @default(now())
+}
+
+model Ticket {
+  id              String       @id @default(uuid())
+  farmerId        String
+  farmer          User         @relation("FarmerTickets", fields: [farmerId], references: [id])
+  expertId        String?
+  expert          User?        @relation("ExpertTickets", fields: [expertId], references: [id])
+  diseaseReportId String?
+  diseaseReport   DiseaseReport? @relation(fields: [diseaseReportId], references: [id])
+  title           String
+  description     String       @db.Text
+  status          TicketStatus @default(OPEN)
+  resolutionNotes String?      @db.Text
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String   @db.Text
+  channel   String   // SMS, WhatsApp, Email, Push
+  status    String   // PENDING, SENT, FAILED
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  details   String   @db.Text
+  ipAddress String?
+  createdAt DateTime @default(now())
+}

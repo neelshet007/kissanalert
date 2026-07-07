@@ -1,0 +1,90 @@
+{
+  "name": "KisanAlert_Disease_Escalation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "kisan-alert/disease-escalation",
+        "options": {}
+      },
+      "id": "node_webhook",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.severity}}",
+              "value2": "HIGH"
+            }
+          ]
+        }
+      },
+      "id": "node_check_severity",
+      "name": "Is Severity High?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [400, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "alerts@kisanalert.com",
+        "toEmail": "={{$json.expertEmail}}",
+        "subject": "⚠️ High Severity Crop Disease Escalation",
+        "text": "Hello Expert,\nA ticket has been automatically raised for farmer: {{$json.farmerName}} regarding disease: {{$json.diseaseName}}.\nPlease review immediately on the dashboard: http://localhost:3000/dashboard/expert",
+        "options": {}
+      },
+      "id": "node_email_expert",
+      "name": "Notify Expert (Resend)",
+      "type": "n8n-nodes-base.email",
+      "typeVersion": 1,
+      "position": [650, 200]
+    },
+    {
+      "parameters": {
+        "message": "Kisan Alert: Your crop concern has been sent to RSK Expert. Check Status: http://localhost:3000/dashboard/farmer",
+        "phoneNumber": "={{$json.farmerPhone}}"
+      },
+      "id": "node_sms_farmer",
+      "name": "Notify Farmer (SMS)",
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [650, 400]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Is Severity High?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Severity High?": {
+      "main": [
+        [
+          {
+            "node": "Notify Expert (Resend)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notify Farmer (SMS)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
