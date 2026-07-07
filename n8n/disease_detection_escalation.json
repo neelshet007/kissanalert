@@ -33,10 +33,10 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://api.telegram.org/botYOUR_TELEGRAM_BOT_TOKEN/sendMessage",
+        "url": "=https://api.telegram.org/bot{{$env.TELEGRAM_BOT_TOKEN}}/sendMessage",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\"chat_id\": \"YOUR_TELEGRAM_CHAT_ID\", \"text\": \"⚠️ High Severity Crop Disease Escalation! Farmer: {{$json.farmerName}} has a suspected case of: {{$json.diseaseName}}. Please review immediately: http://localhost:3000/dashboard/expert\"}",
+        "jsonBody": "={\"chat_id\": \"{{$env.TELEGRAM_CHAT_ID}}\", \"text\": \"⚠️ High Severity Crop Disease Escalation! Farmer: {{$json.farmerName}} has a suspected case of: {{$json.diseaseName}}. Please review immediately: http://localhost:3000/dashboard/expert\"}",
         "options": {}
       },
       "id": "node_telegram_expert",
@@ -48,10 +48,10 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://api.telegram.org/botYOUR_TELEGRAM_BOT_TOKEN/sendMessage",
+        "url": "=https://api.telegram.org/bot{{$env.TELEGRAM_BOT_TOKEN}}/sendMessage",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\"chat_id\": \"YOUR_TELEGRAM_CHAT_ID\", \"text\": \"🌱 Kisan Alert: Your crop concern ({{$json.diseaseName}}) has been escalated to an RSK expert. Status check: http://localhost:3000/dashboard/farmer\"}",
+        "jsonBody": "={\"chat_id\": \"{{$env.TELEGRAM_CHAT_ID}}\", \"text\": \"🌱 Kisan Alert: Your crop concern ({{$json.diseaseName}}) has been escalated to an RSK expert. Status check: http://localhost:3000/dashboard/farmer\"}",
         "options": {}
       },
       "id": "node_telegram_farmer",
