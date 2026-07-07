@@ -88,19 +88,19 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-50 dark:bg-stone-950 flex items-center justify-center p-6 text-stone-850 dark:text-stone-100">
-      <div className="w-full max-w-md glass-panel p-8 rounded-3xl border border-stone-200/50 dark:border-stone-800/50 shadow-2xl space-y-6">
+    <div className="min-h-screen bg-gradient-to-tr from-[#022c22] via-[#064e3b] to-[#042f2e] flex items-center justify-center p-6 text-stone-100">
+      <div className="w-full max-w-md bg-emerald-950/30 backdrop-blur-xl p-8 rounded-3xl border border-emerald-500/10 shadow-2xl space-y-6">
         
         <div className="text-center space-y-2">
-          <div className="bg-emerald-600 dark:bg-emerald-500 text-white w-12 h-12 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20">
+          <div className="bg-emerald-500 text-white w-12 h-12 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20">
             <Sprout className="w-6 h-6" />
           </div>
-          <h2 className="text-3xl font-black text-emerald-700 dark:text-emerald-400">Welcome to Kisan Alert</h2>
-          <p className="text-sm text-stone-500 dark:text-stone-400">Select a demo account or sign in to continue</p>
+          <h2 className="text-3xl font-black text-white">Welcome to Kisan Alert</h2>
+          <p className="text-sm text-emerald-300/70 font-semibold">Select a demo account or sign in to continue</p>
         </div>
 
         {error && (
-          <div className="bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 p-3.5 rounded-xl border border-red-300/20 text-sm font-semibold">
+          <div className="bg-red-950/40 text-red-400 p-3.5 rounded-xl border border-red-500/25 text-sm font-semibold">
             {error}
           </div>
         )}
@@ -109,19 +109,19 @@ export default function LoginPage() {
         <div className="grid grid-cols-3 gap-2 text-center text-xs">
           <button
             onClick={() => handleDemoFill('farmer')}
-            className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/20 hover:border-emerald-500/50 rounded-xl font-bold text-emerald-700 dark:text-emerald-400 transition-all"
+            className="p-3 bg-emerald-500/10 border border-emerald-500/20 hover:border-emerald-400 rounded-xl font-extrabold text-emerald-300 transition-all"
           >
             Farmer Demo
           </button>
           <button
             onClick={() => handleDemoFill('expert')}
-            className="p-3 bg-purple-50 dark:bg-purple-950/40 border border-purple-500/20 hover:border-purple-500/50 rounded-xl font-bold text-purple-700 dark:text-purple-400 transition-all"
+            className="p-3 bg-purple-500/10 border border-purple-500/20 hover:border-purple-400 rounded-xl font-extrabold text-purple-300 transition-all"
           >
             Expert Demo
           </button>
           <button
             onClick={() => handleDemoFill('admin')}
-            className="p-3 bg-stone-100 dark:bg-stone-900 border border-stone-300 dark:border-stone-700 hover:border-stone-500 rounded-xl font-bold text-stone-700 dark:text-stone-300 transition-all"
+            className="p-3 bg-stone-850/50 border border-stone-750 hover:border-stone-400 rounded-xl font-extrabold text-stone-300 transition-all"
           >
             Admin Demo
           </button>
@@ -129,31 +129,31 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div className="space-y-1">
-            <label className="text-xs uppercase font-bold text-stone-500 dark:text-stone-400 tracking-wider">Email Address</label>
+            <label className="text-xs uppercase font-bold text-emerald-300 tracking-wider">Email Address</label>
             <div className="relative">
-              <Mail className="w-4 h-4 absolute left-3 top-3.5 text-stone-400" />
+              <Mail className="w-4 h-4 absolute left-3 top-3.5 text-emerald-400/70" />
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="farmer@kisanalert.com"
-                className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/70 dark:bg-stone-900/60 border border-stone-200 dark:border-stone-800 focus:border-emerald-500 outline-none transition-all text-sm font-medium"
+                className="w-full pl-10 pr-4 py-3 rounded-xl bg-emerald-950/60 border border-emerald-500/10 outline-none text-sm font-semibold text-white placeholder-emerald-500/40"
               />
             </div>
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs uppercase font-bold text-stone-500 dark:text-stone-400 tracking-wider">Password</label>
+            <label className="text-xs uppercase font-bold text-emerald-300 tracking-wider">Password</label>
             <div className="relative">
-              <Lock className="w-4 h-4 absolute left-3 top-3.5 text-stone-400" />
+              <Lock className="w-4 h-4 absolute left-3 top-3.5 text-emerald-400/70" />
               <input
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/70 dark:bg-stone-900/60 border border-stone-200 dark:border-stone-800 focus:border-emerald-500 outline-none transition-all text-sm font-medium"
+                className="w-full pl-10 pr-4 py-3 rounded-xl bg-emerald-950/60 border border-emerald-500/10 outline-none text-sm font-semibold text-white placeholder-emerald-500/40"
               />
             </div>
           </div>
@@ -161,15 +161,15 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white rounded-xl font-extrabold flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-500/20"
+            className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-400 text-[#022c22] rounded-xl font-black flex items-center justify-center gap-2 transition-all shadow-lg"
           >
             {loading ? t.loading : 'Sign In'}
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
 
-        <div className="text-center text-xs text-stone-500 dark:text-stone-400 border-t border-stone-200/40 dark:border-stone-800/40 pt-4 flex items-center justify-center gap-1.5 font-medium">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+        <div className="text-center text-xs text-emerald-400/50 border-t border-emerald-500/10 pt-4 flex items-center justify-center gap-1.5 font-bold">
+          <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
           Secured access using JWT Encryption
         </div>
       </div>
