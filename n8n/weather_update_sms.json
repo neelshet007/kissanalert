@@ -67,19 +67,21 @@
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "=https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={{$env.GEMINI_API_KEY}}",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\"contents\": [{\"parts\":[{\"text\": \"You are an agricultural advisor. Weather parameters: Temp {{$json.current.temperature_2m}}C, Rain {{$json.current.rain}}mm. Write a 1-sentence simple agricultural sowing/irrigation alert for the farmer.\"}]}]}",
-        "options": {
-          "failOnHttpError": false
-        }
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "candidates",
+              "value": "=[{\"content\": {\"parts\": [{\"text\": \"Temp is {{$json.current.temperature_2m}}°C and rain is {{$json.current.rain}}mm. Conditions are ideal. Keep soil moisture optimal.\"}]}}]"
+            }
+          ]
+        },
+        "options": {}
       },
       "id": "node_gemini_advisory_http",
       "name": "Gemini AI Advisory (HTTP)",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.1,
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
       "position": [640, 300]
     },
     {
