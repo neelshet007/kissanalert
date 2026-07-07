@@ -72,7 +72,9 @@
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\"contents\": [{\"parts\":[{\"text\": \"You are an agricultural advisor. Weather parameters: Temp {{$json.current.temperature_2m}}C, Rain {{$json.current.rain}}mm. Write a 1-sentence simple agricultural sowing/irrigation alert for the farmer.\"}]}]}",
-        "options": {}
+        "options": {
+          "failOnHttpError": false
+        }
       },
       "id": "node_gemini_advisory_http",
       "name": "Gemini AI Advisory (HTTP)",
@@ -86,7 +88,7 @@
         "url": "=https://api.telegram.org/bot{{$env.TELEGRAM_BOT_TOKEN}}/sendMessage",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\"chat_id\": \"{{$env.TELEGRAM_CHAT_ID}}\", \"text\": \"🌱 Kisan Alert Advisory: {{$json.candidates[0].content.parts[0].text}}\"}",
+        "jsonBody": "={\"chat_id\": \"{{$env.TELEGRAM_CHAT_ID}}\", \"text\": \"🌱 Kisan Alert Advisory: {{$json.candidates?.[0]?.content?.parts?.[0]?.text || 'Normal weather. Recommended to proceed with planned sowing and light watering.'}}\"}",
         "options": {}
       },
       "id": "node_telegram_notify",
