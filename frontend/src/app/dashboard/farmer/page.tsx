@@ -416,7 +416,7 @@ export default function FarmerDashboard() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
                 <div className="p-4 bg-emerald-500/10 rounded-2xl border border-emerald-500/20">
                   <span className="text-xs uppercase text-emerald-400 font-extrabold">Recommended Crop</span>
-                  <p className="text-2xl font-black text-white mt-1">{cropRec.recommendedCrop}</p>
+                  <p className="text-2xl font-black text-white mt-1">{t[cropRec.recommendedCrop] || cropRec.recommendedCrop}</p>
                   <div className="flex items-center gap-1.5 mt-2">
                     <span className="text-[10px] text-emerald-300">Confidence:</span>
                     <span className="text-[10px] font-bold bg-emerald-500/25 px-2.5 py-0.5 rounded-full border border-emerald-500/30">{Math.round(cropRec.confidenceScore * 100)}%</span>
@@ -680,7 +680,7 @@ export default function FarmerDashboard() {
                   <div className="flex justify-between items-center bg-[#022c22]/50 p-4 rounded-xl border border-emerald-500/10">
                     <div>
                       <span className="text-[10px] uppercase font-bold tracking-widest text-emerald-400">Diagnosis</span>
-                      <h4 className="font-black text-emerald-300 text-lg leading-tight">{diseaseReport.diseaseName}</h4>
+                      <h4 className="font-black text-emerald-300 text-lg leading-tight">{t[diseaseReport.diseaseName] || diseaseReport.diseaseName}</h4>
                     </div>
                     <div className="text-right">
                       <span className="text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/25 px-3 py-1 rounded-full">

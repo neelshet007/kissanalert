@@ -4,12 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useStore } from '../../../store/useStore';
 import { translations } from '../../../utils/translations';
-import { Sprout, LogOut, FileText, CheckCircle, Clock, MapPin, Clipboard } from 'lucide-react';
+import { Sprout, LogOut, FileText, CheckCircle, Clock, MapPin, Globe } from 'lucide-react';
 import axios from 'axios';
 
 export default function ExpertDashboard() {
   const router = useRouter();
-  const { user, currentLanguage, logout } = useStore();
+  const { user, currentLanguage, setLanguage, logout } = useStore();
   const t = translations[currentLanguage] || translations.en;
 
   const [tickets, setTickets] = useState<any[]>([]);
@@ -100,7 +100,6 @@ export default function ExpertDashboard() {
       fetchTickets();
       setResolutionNotes('');
     } catch (_) {
-      // Offline fallback state update
       const updated = tickets.map(t => {
         if (t.id === selectedTicket.id) {
           return { ...t, status: 'RESOLVED', resolutionNotes };
@@ -116,39 +115,59 @@ export default function ExpertDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-50 dark:bg-stone-950 text-stone-850 dark:text-stone-100 flex flex-col md:flex-row">
+    <div className="min-h-screen bg-gradient-to-tr from-[#022c22] via-[#064e3b] to-[#042f2e] text-stone-100 flex flex-col md:flex-row">
       
       {/* Sidebar */}
-      <aside className="w-full md:w-64 glass-panel border-r border-stone-200/50 dark:border-stone-800/50 p-6 flex flex-col justify-between">
+      <aside className="w-full md:w-72 bg-[#022c22]/60 backdrop-blur-xl border-r border-emerald-500/10 p-6 flex flex-col justify-between">
         <div className="space-y-8">
-          <div className="flex items-center gap-2">
-            <div className="bg-emerald-600 dark:bg-emerald-500 text-white p-2 rounded-xl">
-              <Sprout className="w-5 h-5" />
+          <div className="flex items-center gap-3">
+            <div className="bg-emerald-500 text-white p-2.5 rounded-xl shadow-lg shadow-emerald-500/20">
+              <Sprout className="w-6 h-6" />
             </div>
-            <h1 className="font-extrabold text-lg tracking-tight text-emerald-700 dark:text-emerald-400">{t.appName}</h1>
+            <div>
+              <h1 className="font-extrabold text-lg tracking-tight text-emerald-300">{t.appName}</h1>
+              <p className="text-[9px] uppercase font-bold tracking-widest text-emerald-400">RSK Expert Hub</p>
+            </div>
           </div>
 
-          <div className="space-y-1">
-            <span className="text-[10px] uppercase font-bold text-stone-400 tracking-wider">Expertise RSK Hub</span>
-            <div className="p-3 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 rounded-xl text-xs font-semibold">
-              Rythu Seva Kendra Office
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-[10px] uppercase font-extrabold tracking-wider text-emerald-400/70">{t.languageSelect}</label>
+              <div className="flex items-center gap-1.5 bg-emerald-950/65 px-3 py-2 rounded-xl border border-emerald-500/20">
+                <Globe className="w-4 h-4 text-emerald-400" />
+                <select
+                  value={currentLanguage}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  className="w-full bg-transparent border-none outline-none font-bold text-emerald-200 cursor-pointer focus:ring-0 text-xs"
+                >
+                  <option value="en" className="bg-[#022c22]">English</option>
+                  <option value="hi" className="bg-[#022c22]">हिन्दी</option>
+                  <option value="te" className="bg-[#022c22]">తెలుగు</option>
+                  <option value="mr" className="bg-[#022c22]">मराठी</option>
+                  <option value="ta" className="bg-[#022c22]">தமிழ்</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="p-4 bg-emerald-950/50 border border-emerald-500/10 text-emerald-300 rounded-xl text-xs font-bold">
+              📍 RSK Guntur Center
             </div>
           </div>
         </div>
 
-        <div className="pt-6 border-t border-stone-200/40 dark:border-stone-800/40">
+        <div className="pt-6 border-t border-emerald-500/10">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-950 flex items-center justify-center font-bold text-purple-700 dark:text-purple-400">
+            <div className="w-9 h-9 rounded-xl bg-purple-500/20 border border-purple-500/35 flex items-center justify-center font-bold text-purple-300">
               {user?.name?.[0] || 'E'}
             </div>
             <div>
-              <p className="font-bold text-sm leading-none">{user?.name || 'Expert'}</p>
-              <span className="text-[10px] uppercase font-bold text-stone-400 tracking-wider">RSK Specialist</span>
+              <p className="font-extrabold text-sm leading-none text-white">{user?.name || 'Expert'}</p>
+              <span className="text-[9px] uppercase font-bold text-purple-400 tracking-wider">RSK Specialist</span>
             </div>
           </div>
           <button 
             onClick={() => { logout(); router.push('/'); }}
-            className="w-full py-2.5 bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-950/40 rounded-xl font-bold text-xs text-red-600 dark:text-red-400 flex items-center justify-center gap-1.5 transition-all"
+            className="w-full py-3 bg-red-950/30 hover:bg-red-950/60 border border-red-500/15 rounded-xl font-bold text-xs text-red-400 flex items-center justify-center gap-1.5 transition-all"
           >
             <LogOut className="w-4 h-4" />
             {t.logout}
@@ -162,8 +181,8 @@ export default function ExpertDashboard() {
         {/* Ticket List Panel */}
         <div className="w-full lg:w-96 flex flex-col space-y-4">
           <div>
-            <h2 className="text-2xl font-black">{t.expertDashboard}</h2>
-            <p className="text-xs text-stone-500">Review crop disease cases escalated by AI</p>
+            <h2 className="text-3xl font-black text-white">{t.expertDashboard}</h2>
+            <p className="text-xs text-emerald-300/70 font-semibold mt-1">Review crop disease cases escalated by AI</p>
           </div>
 
           <div className="flex-1 overflow-y-auto space-y-3 max-h-[75vh]">
@@ -173,21 +192,21 @@ export default function ExpertDashboard() {
                 onClick={() => setSelectedTicket(ticket)}
                 className={`p-4 rounded-2xl border cursor-pointer transition-all ${
                   selectedTicket?.id === ticket.id 
-                    ? 'bg-white dark:bg-stone-900 border-purple-500 shadow-lg' 
-                    : 'glass-panel border-stone-200/50 dark:border-stone-850 hover:border-stone-300 dark:hover:border-stone-700'
+                    ? 'bg-emerald-950/50 border-emerald-400 shadow-xl' 
+                    : 'bg-emerald-950/20 border-emerald-500/10 hover:border-emerald-500/30'
                 }`}
               >
                 <div className="flex justify-between items-start">
-                  <h4 className="font-extrabold text-sm">{ticket.title}</h4>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                    ticket.status === 'OPEN' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
+                  <h4 className="font-extrabold text-sm text-white">{ticket.title}</h4>
+                  <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${
+                    ticket.status === 'OPEN' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
                   }`}>
                     {ticket.status}
                   </span>
                 </div>
-                <p className="text-xs text-stone-500 dark:text-stone-400 mt-2 line-clamp-2">{ticket.description}</p>
+                <p className="text-xs text-emerald-100/60 mt-2 line-clamp-2">{ticket.description}</p>
                 
-                <div className="flex justify-between items-center mt-3 pt-3 border-t border-stone-100 dark:border-stone-850 text-[10px] text-stone-400 font-bold">
+                <div className="flex justify-between items-center mt-3 pt-3 border-t border-emerald-500/10 text-[10px] text-emerald-400/70 font-bold">
                   <span>Farmer: {ticket.farmer?.name}</span>
                   <span className="flex items-center gap-1">
                     <Clock className="w-3 h-3" />
@@ -200,90 +219,90 @@ export default function ExpertDashboard() {
         </div>
 
         {/* Ticket Detail Panel */}
-        <div className="flex-1 glass-panel p-6 rounded-3xl border border-stone-200/50 dark:border-stone-800/50 shadow-xl space-y-6">
+        <div className="flex-1 bg-emerald-950/30 backdrop-blur-xl p-6 rounded-3xl border border-emerald-500/10 shadow-xl space-y-6">
           {selectedTicket ? (
             <div className="space-y-6">
               
-              <div className="flex justify-between items-start border-b border-stone-200/40 dark:border-stone-800/40 pb-4">
+              <div className="flex justify-between items-start border-b border-emerald-500/10 pb-4">
                 <div>
-                  <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Ticket ID: {selectedTicket.id}</span>
-                  <h3 className="text-xl font-extrabold text-stone-800 dark:text-stone-100 mt-1">{selectedTicket.title}</h3>
+                  <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest">Ticket ID: {selectedTicket.id}</span>
+                  <h3 className="text-xl font-extrabold text-white mt-1">{selectedTicket.title}</h3>
                 </div>
                 <div className="flex gap-2">
-                  <span className="text-xs bg-purple-50 dark:bg-purple-950 text-purple-700 px-3 py-1 rounded-full font-bold">
+                  <span className="text-xs bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 px-3.5 py-1 rounded-full font-bold">
                     Farmer Lang: {selectedTicket.farmer?.language.toUpperCase()}
                   </span>
                 </div>
               </div>
 
               {/* Farmer Profile */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-stone-100/50 dark:bg-stone-900/60 p-4 rounded-2xl border border-stone-200/35">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-emerald-950/40 p-4 rounded-2xl border border-emerald-500/5">
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-stone-400">Farmer Details</span>
-                  <p className="font-bold text-sm text-stone-700 dark:text-stone-300">{selectedTicket.farmer?.name}</p>
-                  <p className="text-xs text-stone-500">Phone: {selectedTicket.farmer?.phone} | Email: {selectedTicket.farmer?.email}</p>
+                  <span className="text-[10px] uppercase font-bold text-emerald-400/70">Farmer Details</span>
+                  <p className="font-extrabold text-sm text-white">{selectedTicket.farmer?.name}</p>
+                  <p className="text-xs text-emerald-100/60 mt-0.5">Phone: {selectedTicket.farmer?.phone} | Email: {selectedTicket.farmer?.email}</p>
                 </div>
-                <div className="flex items-center gap-1 text-xs font-semibold text-stone-600 dark:text-stone-400">
-                  <MapPin className="w-4 h-4 text-emerald-500" />
+                <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-300">
+                  <MapPin className="w-4 h-4 text-emerald-400" />
                   <span>Farm Location: Guntur Rural, AP</span>
                 </div>
               </div>
 
               {/* AI Diagnostic Output */}
-              <div className="p-4 bg-white/60 dark:bg-stone-900/60 rounded-2xl border border-stone-250/20 space-y-3">
-                <div className="flex items-center justify-between border-b border-stone-200/30 pb-2">
-                  <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">AI Gemini Vision Report</span>
-                  <span className="text-xs font-bold text-red-500 bg-red-100/50 dark:bg-red-950 px-2 py-0.5 rounded">
+              <div className="p-4 bg-emerald-950/60 rounded-2xl border border-emerald-500/10 space-y-3">
+                <div className="flex items-center justify-between border-b border-emerald-500/10 pb-2">
+                  <span className="text-xs font-extrabold text-emerald-300">AI Gemini Vision Report</span>
+                  <span className="text-[10px] font-black text-rose-300 bg-rose-500/20 border border-rose-500/20 px-2 py-0.5 rounded">
                     Severity: {selectedTicket.diseaseReport?.severity || 'HIGH'}
                   </span>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-3 text-xs">
                   <div>
-                    <span className="font-bold text-stone-400">Identified Disease</span>
-                    <p className="font-bold text-stone-700 dark:text-stone-300">{selectedTicket.diseaseReport?.diseaseName}</p>
+                    <span className="font-bold text-emerald-400/60">Identified Disease</span>
+                    <p className="font-extrabold text-white mt-0.5">{t[selectedTicket.diseaseReport?.diseaseName] || selectedTicket.diseaseReport?.diseaseName}</p>
                   </div>
                   <div>
-                    <span className="font-bold text-stone-400">AI Confidence</span>
-                    <p className="font-bold text-stone-700 dark:text-stone-300">{Math.round((selectedTicket.diseaseReport?.confidenceScore || 0.75) * 100)}%</p>
+                    <span className="font-bold text-emerald-400/60">AI Confidence</span>
+                    <p className="font-extrabold text-white mt-0.5">{Math.round((selectedTicket.diseaseReport?.confidenceScore || 0.75) * 100)}%</p>
                   </div>
                 </div>
 
-                <div className="text-xs leading-relaxed text-stone-600 dark:text-stone-300 pt-1.5 border-t border-stone-200/30">
-                  <span className="font-bold block text-stone-400 mb-1">AI Treatment Proposal</span>
+                <div className="text-xs leading-relaxed text-emerald-100 pt-2.5 border-t border-emerald-500/10">
+                  <span className="font-bold block text-emerald-400/70 mb-1">AI Treatment Proposal</span>
                   {selectedTicket.diseaseReport?.treatment}
                 </div>
               </div>
 
               {/* Resolution Action */}
               {selectedTicket.status === 'OPEN' ? (
-                <form onSubmit={handleResolveTicket} className="space-y-4 pt-4 border-t border-stone-200/40">
+                <form onSubmit={handleResolveTicket} className="space-y-4 pt-4 border-t border-emerald-500/10">
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-stone-400">Manual Diagnosis & Instructions</label>
+                    <label className="text-xs font-bold uppercase tracking-wider text-emerald-400">Manual Diagnosis & Instructions</label>
                     <textarea
                       required
                       value={resolutionNotes}
                       onChange={(e) => setResolutionNotes(e.target.value)}
                       placeholder="Specify your expert pesticide dosage recommendations, fertilizer scheduling, or soil treatment advice to the farmer..."
-                      className="w-full p-4 rounded-2xl bg-white/70 dark:bg-stone-900 border border-stone-250 focus:border-purple-500 outline-none text-sm font-medium h-32"
+                      className="w-full p-4 rounded-2xl bg-emerald-950/60 border border-emerald-500/15 focus:border-emerald-400 outline-none text-sm font-medium h-32 text-white placeholder-emerald-400/40"
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={loading}
-                    className="bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 text-white font-extrabold px-8 py-3.5 rounded-xl text-sm transition-all"
+                    className="bg-gradient-to-r from-emerald-500 to-teal-400 text-[#022c22] font-black px-8 py-3.5 rounded-xl text-sm transition-all"
                   >
                     {loading ? 'Submitting resolution...' : 'Resolve Ticket & Notify Farmer'}
                   </button>
                 </form>
               ) : (
-                <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-500/20 rounded-2xl space-y-2">
+                <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl space-y-2">
                   <div className="flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5 text-emerald-500" />
-                    <span className="font-bold text-sm text-emerald-700 dark:text-emerald-400">Ticket Resolved</span>
+                    <CheckCircle className="w-5 h-5 text-emerald-400" />
+                    <span className="font-bold text-sm text-emerald-300">Ticket Resolved</span>
                   </div>
-                  <p className="text-xs text-emerald-800 dark:text-emerald-300 leading-relaxed font-medium">
-                    <span className="font-bold block text-emerald-700 dark:text-emerald-400">Resolution Notes:</span>
+                  <p className="text-xs text-emerald-100 leading-relaxed font-semibold">
+                    <span className="font-bold block text-emerald-400 mb-1">Resolution Notes:</span>
                     {selectedTicket.resolutionNotes}
                   </p>
                 </div>
@@ -291,7 +310,7 @@ export default function ExpertDashboard() {
 
             </div>
           ) : (
-            <div className="text-center py-20 text-stone-400">
+            <div className="text-center py-20 text-emerald-400/60 font-bold">
               Select an escalated crop disease ticket to begin expert manual review.
             </div>
           )}
