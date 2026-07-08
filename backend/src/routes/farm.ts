@@ -2,7 +2,7 @@ import { Router, Response } from 'express';
 import multer from 'multer';
 import prisma from '../config/db';
 import { authenticateJWT, AuthRequest } from '../middlewares/auth';
-import { getCropRecommendation, extractSoilReportFromImage } from '../services/gemini';
+import { AIService } from '../services/gemini';
 import { fetchWeatherData } from '../services/weather';
 import { triggerN8NWebhook } from '../services/n8n';
 
@@ -125,7 +125,7 @@ router.post('/:id/soil-report', authenticateJWT, async (req: AuthRequest, res: a
     }
 
     // Fetch crop recommendation from Gemini
-    const aiRecommendation = await getCropRecommendation({
+    const aiRecommendation = await AIService.getCropRecommendation({
       soilReport: {
         ph: parseFloat(ph),
         nitrogen: parseFloat(nitrogen),
@@ -180,7 +180,7 @@ router.post('/:id/soil-report-image', authenticateJWT, upload.single('image'), a
     const mimeType = req.file.mimetype;
 
     // Extract chemical values from image using Gemini Vision
-    const extractedData = await extractSoilReportFromImage(base64Image, mimeType);
+    const extractedData = await AIService.extractSoilReport(base64Image, mimeType);
 
     // Save report
     const soilReport = await prisma.soilReport.create({
@@ -204,7 +204,7 @@ router.post('/:id/soil-report-image', authenticateJWT, upload.single('image'), a
     }
 
     // Fetch crop recommendation from Gemini based on extracted parameters
-    const aiRecommendation = await getCropRecommendation({
+    const aiRecommendation = await AIService.getCropRecommendation({
       soilReport: {
         ph: soilReport.ph,
         nitrogen: soilReport.nitrogen,

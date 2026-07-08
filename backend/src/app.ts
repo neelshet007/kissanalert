@@ -37,6 +37,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/farms', farmRoutes);
 app.use('/api/disease', diseaseRoutes);
+app.use('/api/diseases', diseaseRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/voice', voiceRoutes);
 app.use('/api/analytics', analyticsRoutes);

@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+// Standardize API Key extraction
 const rawApiKey = process.env.GEMINI_API_KEY;
 const apiKey = rawApiKey ? rawApiKey.replace(/^["']|["']$/g, '') : undefined;
 let aiClient: any = null;
@@ -18,18 +19,153 @@ if (apiKey) {
   console.warn('⚠️ Warning: GEMINI_API_KEY is not defined in environment variables.');
 }
 
+// Retrieve model configurations from env variables with standard fallbacks
+const MODELS = {
+  DEFAULT: process.env.GEMINI_DEFAULT_MODEL || 'models/gemini-2.5-flash',
+  PRO: process.env.GEMINI_PRO_MODEL || 'models/gemini-2.5-pro',
+  FAST: process.env.GEMINI_FAST_MODEL || 'models/gemini-2.5-flash-lite',
+  AUDIO: process.env.GEMINI_AUDIO_MODEL || 'models/gemini-2.5-flash-native-audio-latest',
+  IMAGE: process.env.GEMINI_IMAGE_MODEL || 'models/imagen-4.0-fast-generate-001',
+  IMAGE_HQ: process.env.GEMINI_IMAGE_MODEL_HQ || 'models/imagen-4.0-ultra-generate-001',
+  EMBEDDING: process.env.GEMINI_EMBEDDING_MODEL || 'models/gemini-embedding-2',
+};
+
 /**
- * Smart Crop Recommendation System
+ * Clean Markdown fences and parse JSON safely
  */
-export async function getCropRecommendation(params: {
-  soilReport: { ph: number; nitrogen: number; phosphorus: number; potassium: number; organicCarbon: number };
-  location: string;
-  rainfallForecast: number;
-  groundwater: string;
-  season: string;
-  soilType: string;
-}) {
-  const prompt = `You are an expert AI Agronomist specializing in Indian agriculture.
+function cleanAndParseJSON(responseText: string): any {
+  const cleaned = responseText
+    .replace(/^```json\s*/i, "")
+    .replace(/^```\s*/i, "")
+    .replace(/\s*```$/, "")
+    .trim();
+  try {
+    return JSON.parse(cleaned);
+  } catch (error: any) {
+    console.error('Failed to parse JSON response. Raw response was:', responseText);
+    throw new Error(`Invalid JSON format returned from Gemini API: ${error.message || error}`);
+  }
+}
+
+/**
+ * Exponential backoff retry handler for API calls
+ */
+/**
+ * Exponential backoff retry handler for API calls
+ */
+async function retryWithBackoff<T>(fn: () => Promise<T>, retries = 3, delay = 1000, modelName = 'unknown'): Promise<T> {
+  try {
+    return await fn();
+  } catch (error: any) {
+    const errorMessage = error?.message || String(error);
+    const status = error?.status;
+    const isRateLimit = status === 429 || errorMessage.includes('429') || errorMessage.toLowerCase().includes('quota');
+    const isTransient = errorMessage.toLowerCase().includes('fetch failed') || 
+                        errorMessage.toLowerCase().includes('timeout') || 
+                        errorMessage.toLowerCase().includes('network');
+
+    // Log the full request details and response details
+    console.error(`❌ Gemini API call failed for model "${modelName}":`, {
+      requestUrl: `https://generativelanguage.googleapis.com/v1beta/${modelName}:generateContent`,
+      status,
+      message: errorMessage,
+      responseBody: error?.response?.data || error?.response || 'No detailed response body'
+    });
+
+    if (retries > 0 && (isRateLimit || isTransient)) {
+      console.warn(`⚠️ Retrying Gemini API call due to: ${errorMessage}. Retries left: ${retries}. Backing off for ${delay}ms...`);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      return retryWithBackoff(fn, retries - 1, delay * 2, modelName);
+    }
+    throw error;
+  }
+}
+
+/**
+ * Centralized AI Service wrapping Google Gemini
+ */
+export const AIService = {
+  /**
+   * Helper: Generate text from prompt
+   */
+  async generateText(prompt: string, options: { model?: string; maxOutputTokens?: number } = {}) {
+    if (!apiKey || !aiClient) {
+      throw new Error('Gemini API Key is not configured. Please set GEMINI_API_KEY in environment variables.');
+    }
+    const targetModel = options.model || MODELS.DEFAULT;
+    return retryWithBackoff(async () => {
+      const model = aiClient.getGenerativeModel({ model: targetModel }, { apiVersion: 'v1beta' });
+      const result = await model.generateContent({
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: options.maxOutputTokens ? { maxOutputTokens: options.maxOutputTokens } : undefined
+      });
+      return result.response.text();
+    }, 3, 1000, targetModel);
+  },
+
+  /**
+   * Helper: Generate Structured JSON response
+   */
+  async generateStructuredJSON(prompt: string, options: { model?: string; maxOutputTokens?: number } = {}) {
+    if (!apiKey || !aiClient) {
+      throw new Error('Gemini API Key is not configured. Please set GEMINI_API_KEY in environment variables.');
+    }
+    const targetModel = options.model || MODELS.DEFAULT;
+    return retryWithBackoff(async () => {
+      const model = aiClient.getGenerativeModel({ model: targetModel }, { apiVersion: 'v1beta' });
+      const result = await model.generateContent({
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseMimeType: 'application/json',
+          maxOutputTokens: options.maxOutputTokens
+        }
+      });
+      const textResponse = result.response.text();
+      return cleanAndParseJSON(textResponse);
+    }, 3, 1000, targetModel);
+  },
+
+  /**
+   * Helper: Analyze multimodal image
+   */
+  async analyzeImage(prompt: string, imageBase64: string, mimeType = 'image/jpeg', options: { model?: string; responseMimeType?: string } = {}) {
+    if (!apiKey || !aiClient) {
+      throw new Error('Gemini API Key is not configured. Please set GEMINI_API_KEY in environment variables.');
+    }
+    const targetModel = options.model || MODELS.DEFAULT;
+    return retryWithBackoff(async () => {
+      const model = aiClient.getGenerativeModel({ model: targetModel }, { apiVersion: 'v1beta' });
+      const result = await model.generateContent({
+        contents: [{
+          role: 'user',
+          parts: [
+            { text: prompt },
+            {
+              inlineData: {
+                data: imageBase64,
+                mimeType
+              }
+            }
+          ]
+        }],
+        generationConfig: options.responseMimeType ? { responseMimeType: options.responseMimeType } : undefined
+      });
+      return result.response.text();
+    }, 3, 1000, targetModel);
+  },
+
+  /**
+   * Smart Crop Recommendation System
+   */
+  async getCropRecommendation(params: {
+    soilReport: { ph: number; nitrogen: number; phosphorus: number; potassium: number; organicCarbon: number };
+    location: string;
+    rainfallForecast: number;
+    groundwater: string;
+    season: string;
+    soilType: string;
+  }) {
+    const prompt = `You are an expert AI Agronomist specializing in Indian agriculture.
 Recommend the best crop to cultivate based on the following details:
 - Soil pH: ${params.soilReport.ph}
 - Nitrogen (N): ${params.soilReport.nitrogen} mg/kg
@@ -51,30 +187,19 @@ Respond in strict JSON format:
   "expectedYield": "Expected yield range per acre",
   "riskLevel": "Low/Medium/High with details on pests or drought risk"
 }`;
+    try {
+      return await this.generateStructuredJSON(prompt, { model: MODELS.DEFAULT });
+    } catch (error: any) {
+      console.error('Gemini crop recommendation error:', error);
+      throw new Error(`Gemini crop recommendation failed: ${error.message || error}`);
+    }
+  },
 
-  if (!apiKey || !aiClient) {
-    throw new Error('Gemini API Key is not configured. Please set GEMINI_API_KEY in backend/.env file.');
-  }
-
-  try {
-    const model = aiClient.getGenerativeModel({ model: 'gemini-2.0-flash' });
-    const result = await model.generateContent({
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      generationConfig: { responseMimeType: 'application/json' }
-    });
-    const responseText = result.response.text();
-    return JSON.parse(responseText);
-  } catch (error: any) {
-    console.error('Gemini crop recommendation error:', error);
-    throw new Error(`Gemini crop recommendation failed: ${error.message || error}`);
-  }
-}
-
-/**
- * Image-based Disease Detection & Leaf Analysis
- */
-export async function detectCropDisease(imageBase64: string, mimeType: string = 'image/jpeg') {
-  const prompt = `You are a Plant Pathologist. Analyze the provided leaf or crop image.
+  /**
+   * Image-based Disease Detection & Leaf Analysis
+   */
+  async diagnoseCropDisease(imageBase64: string, mimeType = 'image/jpeg') {
+    const prompt = `You are a Plant Pathologist. Analyze the provided leaf or crop image.
 Identify if any disease is present, specify confidence level, and recommend treatments.
 
 Respond in strict JSON format:
@@ -87,35 +212,23 @@ Respond in strict JSON format:
   "suggestedPesticide": "Suggested fungicide or pesticide name",
   "expertEscalationRequired": true/false
 }`;
+    try {
+      const response = await this.analyzeImage(prompt, imageBase64, mimeType, { 
+        model: MODELS.DEFAULT,
+        responseMimeType: 'application/json'
+      });
+      return cleanAndParseJSON(response);
+    } catch (error: any) {
+      console.error('Gemini Disease Detection error:', error);
+      throw new Error(`Gemini disease detection failed: ${error.message || error}`);
+    }
+  },
 
-  if (!apiKey || !aiClient) {
-    throw new Error('Gemini API Key is not configured. Please set GEMINI_API_KEY in backend/.env file.');
-  }
-
-  try {
-    const model = aiClient.getGenerativeModel({ model: 'gemini-2.0-flash' });
-    const result = await model.generateContent([
-      prompt,
-      {
-        inlineData: {
-          data: imageBase64,
-          mimeType
-        }
-      }
-    ]);
-    const responseText = result.response.text();
-    return JSON.parse(responseText);
-  } catch (error: any) {
-    console.error('Gemini Disease Detection error:', error);
-    throw new Error(`Gemini disease detection failed: ${error.message || error}`);
-  }
-}
-
-/**
- * Voice Query Assistant
- */
-export async function processVoiceQuery(transcription: string, language: string = 'en') {
-  const prompt = `You are Kisan Alert Voice Assistant. A farmer is asking the following query in language/accent: "${transcription}" (User language preference: ${language}).
+  /**
+   * Voice Query Assistant (Farmer Voice queries, Audio logic)
+   */
+  async voiceConversation(transcription: string, language = 'en') {
+    const prompt = `You are Kisan Alert Voice Assistant. A farmer is asking the following query in language/accent: "${transcription}" (User language preference: ${language}).
 Provide a direct, concise, and helpful farming advice answer in clear text.
 Also provide the response translated to the target language: ${language}.
 
@@ -124,29 +237,20 @@ Respond in strict JSON format:
   "englishResponse": "Detailed answer in English",
   "translatedResponse": "Translated response in ${language}"
 }`;
+    try {
+      // Audio/Voice assistant uses the specific Audio model
+      return await this.generateStructuredJSON(prompt, { model: MODELS.AUDIO });
+    } catch (error: any) {
+      console.warn(`⚠️ MODELS.AUDIO ("${MODELS.AUDIO}") failed or is unsupported. Falling back to MODELS.DEFAULT ("${MODELS.DEFAULT}"):`, error.message);
+      return await this.generateStructuredJSON(prompt, { model: MODELS.DEFAULT });
+    }
+  },
 
-  if (!apiKey || !aiClient) {
-    throw new Error('Gemini API Key is not configured. Please set GEMINI_API_KEY in backend/.env file.');
-  }
-
-  try {
-    const model = aiClient.getGenerativeModel({ model: 'gemini-2.0-flash' });
-    const result = await model.generateContent({
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      generationConfig: { responseMimeType: 'application/json' }
-    });
-    return JSON.parse(result.response.text());
-  } catch (error: any) {
-    console.error('Gemini Voice Assistant error:', error);
-    throw new Error(`Gemini voice assistant query failed: ${error.message || error}`);
-  }
-}
-
-/**
- * Extract Soil Report Parameters using Gemini Vision
- */
-export async function extractSoilReportFromImage(imageBase64: string, mimeType: string = 'image/jpeg') {
-  const prompt = `You are an expert soil chemist. Analyze the provided image of a Soil Health Card or Soil Testing Report.
+  /**
+   * Extract Soil Report Parameters using Gemini Vision
+   */
+  async extractSoilReport(imageBase64: string, mimeType = 'image/jpeg') {
+    const prompt = `You are an expert soil chemist. Analyze the provided image of a Soil Health Card or Soil Testing Report.
 Extract the chemical values: pH, Nitrogen (N), Phosphorus (P), Potassium (K), and Organic Carbon.
 If any value is missing or illegible in the card, make an educated agronomic guess based on standard Indian soil profiles.
 
@@ -158,27 +262,59 @@ Respond in strict JSON format:
   "potassium": 0.0,
   "organicCarbon": 0.0
 }`;
+    try {
+      const response = await this.analyzeImage(prompt, imageBase64, mimeType, { 
+        model: MODELS.DEFAULT,
+        responseMimeType: 'application/json'
+      });
+      return cleanAndParseJSON(response);
+    } catch (error: any) {
+      console.error('Gemini Soil Extraction error:', error);
+      throw new Error(`Gemini soil report extraction failed: ${error.message || error}`);
+    }
+  },
 
-  if (!apiKey || !aiClient) {
-    throw new Error('Gemini API Key is not configured. Please set GEMINI_API_KEY in backend/.env file.');
-  }
+  /**
+   * Weather Advisory generation
+   */
+  async generateWeatherAdvice(temp: number, rain: number) {
+    const prompt = `You are an agricultural advisor. Weather parameters: Temp ${temp}C, Rain ${rain}mm. Write a 1-sentence simple agricultural sowing/irrigation alert for the farmer.`;
+    try {
+      // Weather advisories use the default flash model as per requirements
+      return await this.generateText(prompt, { model: MODELS.DEFAULT, maxOutputTokens: 100 });
+    } catch (error: any) {
+      console.error('Gemini Weather Advice error:', error);
+      throw new Error(`Gemini weather advisory failed: ${error.message || error}`);
+    }
+  },
 
-  try {
-    const model = aiClient.getGenerativeModel({ model: 'gemini-2.0-flash' });
-    const result = await model.generateContent([
-      prompt,
-      {
-        inlineData: {
-          data: imageBase64,
-          mimeType
-        }
-      }
-    ]);
-    const responseText = result.response.text();
-    return JSON.parse(responseText);
-  } catch (error: any) {
-    console.error('Gemini Soil Extraction error:', error);
-    throw new Error(`Gemini soil report extraction failed: ${error.message || error}`);
+  /**
+   * Translation utility
+   */
+  async translate(text: string, targetLang: string) {
+    const prompt = `Translate the following text into ${targetLang}. Return ONLY the direct translation without any introduction or quotes:\n\n${text}`;
+    try {
+      return await this.generateText(prompt, { model: MODELS.DEFAULT });
+    } catch (error: any) {
+      console.error('Gemini Translation error:', error);
+      throw new Error(`Gemini translation failed: ${error.message || error}`);
+    }
   }
+};
+
+// --- Backwards Compatibility Exports ---
+export async function getCropRecommendation(params: any) {
+  return AIService.getCropRecommendation(params);
 }
 
+export async function detectCropDisease(imageBase64: string, mimeType = 'image/jpeg') {
+  return AIService.diagnoseCropDisease(imageBase64, mimeType);
+}
+
+export async function processVoiceQuery(transcription: string, language = 'en') {
+  return AIService.voiceConversation(transcription, language);
+}
+
+export async function extractSoilReportFromImage(imageBase64: string, mimeType = 'image/jpeg') {
+  return AIService.extractSoilReport(imageBase64, mimeType);
+}

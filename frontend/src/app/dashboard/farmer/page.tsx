@@ -334,13 +334,6 @@ export default function FarmerDashboard() {
     } finally {
       setVoiceLoading(false);
     }
-  };�ేంద్రీయ నత్రజని ఎరువులు వేయండి.');
-      } else {
-        setVoiceAnswer('To treat leaf yellowing, ensure proper nitrogen levels and check the soil humidity.');
-      }
-    } finally {
-      setVoiceLoading(false);
-    }
   };
 
   const handleDiseaseDiagnose = async () => {

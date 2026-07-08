@@ -2,7 +2,7 @@ import { Router, Response } from 'express';
 import multer from 'multer';
 import prisma from '../config/db';
 import { authenticateJWT, AuthRequest } from '../middlewares/auth';
-import { detectCropDisease } from '../services/gemini';
+import { AIService } from '../services/gemini';
 import { triggerN8NWebhook } from '../services/n8n';
 import { Severity } from '@prisma/client';
 
@@ -31,7 +31,7 @@ router.post('/detect', authenticateJWT, upload.single('image'), async (req: Auth
     const mimeType = req.file.mimetype;
 
     // Detect disease using Gemini Vision
-    const detection = await detectCropDisease(base64Image, mimeType);
+    const detection = await AIService.diagnoseCropDisease(base64Image, mimeType);
 
     // Save report to database
     // Handle mock url or save local reference (in production upload to Cloudinary/S3)

@@ -1,7 +1,7 @@
 import { Router, Response } from 'express';
 import prisma from '../config/db';
 import { authenticateJWT, AuthRequest } from '../middlewares/auth';
-import { processVoiceQuery } from '../services/gemini';
+import { AIService } from '../services/gemini';
 
 const router = Router();
 
@@ -19,7 +19,7 @@ router.post('/query', authenticateJWT, async (req: AuthRequest, res: any) => {
     }
 
     // Call Gemini voice assistant processor
-    const aiResponse = await processVoiceQuery(transcription, language || 'en');
+    const aiResponse = await AIService.voiceConversation(transcription, language || 'en');
 
     // Create database entry for VoiceMessage
     const voiceMessage = await prisma.voiceMessage.create({
