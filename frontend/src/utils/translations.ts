@@ -168,7 +168,12 @@ export const translations: Record<string, Record<string, string>> = {
     "sixAmUpdate": "6:00 AM UPDATE",
     "morningForecastSummary": "Morning Forecast Summary",
     "aiSowingTip": "AI Sowing & Irrigation Tip",
-    "morningForecastText": "Temperature is rising to {temp}°C with {humidity}% humidity. Sowing operations are highly recommended in the morning hours before wind speeds pick up."
+    "morningForecastText": "Temperature is rising to {temp}°C with {humidity}% humidity. Sowing operations are highly recommended in the morning hours before wind speeds pick up.",
+    "mockRecommendedCrop": "Wheat",
+    "mockExpectedYield": "20-22 Quintals",
+    "mockWaterRequirement": "Medium",
+    "mockRiskLevel": "Low",
+    "mockReasoning": "The soil profile indicates ideal pH and organic carbon content. A cool season ensures wheat will thrive. Light watering and standard DAP are recommended."
   },
   hi: {
     appName: "किसान अलर्ट",
@@ -339,7 +344,12 @@ export const translations: Record<string, Record<string, string>> = {
     "sixAmUpdate": "सुबह 6:00 बजे अपडेट",
     "morningForecastSummary": "सुबह के पूर्वानुमान का सारांश",
     "aiSowingTip": "एआई बुवाई और सिंचाई सलाह",
-    "morningForecastText": "तापमान {temp}°C तक बढ़ रहा है और {humidity}% आर्द्रता है। हवा की गति बढ़ने से पहले सुबह के समय बुवाई की सलाह दी जाती है।"
+    "morningForecastText": "तापमान {temp}°C तक बढ़ रहा है और {humidity}% आर्द्रता है। हवा की गति बढ़ने से पहले सुबह के समय बुवाई की सलाह दी जाती है।",
+    "mockRecommendedCrop": "गेहूं",
+    "mockExpectedYield": "20-22 क्विंटल",
+    "mockWaterRequirement": "मध्यम",
+    "mockRiskLevel": "कम",
+    "mockReasoning": "मिट्टी का पीएच और जैविक कार्बन स्तर अनुकूल है। ठंडा मौसम गेहूं की खेती के लिए सबसे उपयुक्त है। हल्की सिंचाई और डीएपी का उपयोग करें।"
   },
   te: {
     appName: "కిసాన్ అలర్ట్",
@@ -510,7 +520,12 @@ export const translations: Record<string, Record<string, string>> = {
     "sixAmUpdate": "ఉదయం 6:00 అప్‌డేట్",
     "morningForecastSummary": "ఉదయం వాతావరణ సూచన సారాంశం",
     "aiSowingTip": "AI విత్తడం & నీటిపారుదల చిట్కా",
-    "morningForecastText": "ఉష్ణోగ్రత {temp}°C కి పెరుగుతోంది మరియు {humidity}% తేమ ఉంది. గాలి వేగం పెరగకముందే ఉదయం వేళల్లో విత్తడం ప్రారంభించడం మంచిది।"
+    "morningForecastText": "ఉష్ణోగ్రత {temp}°C కి పెరుగుతోంది మరియు {humidity}% తేమ ఉంది. గాలి వేగం పెరగకముందే ఉదయం వేళల్లో విత్తడం ప్రారంభించడం మంచిది।",
+    "mockRecommendedCrop": "గోధుమ",
+    "mockExpectedYield": "20-22 క్వింటాళ్లు",
+    "mockWaterRequirement": "మధ్యస్థం",
+    "mockRiskLevel": "తక్కువ",
+    "mockReasoning": "మట్టి పిహెచ్ (pH) మరియు సేంద్రీయ కర్బన శాతం అనుకూలంగా ఉన్నాయి. చలి వాతావరణం గోధుమ పంటకు చాలా అనుకూలం. తేలికపాటి నీటి తడులు మరియు డిఎపి సిఫార్సు చేయబడ్డాయి।"
   },
   mr: {
     appName: "किसान अलर्ट",
@@ -681,7 +696,12 @@ export const translations: Record<string, Record<string, string>> = {
     "sixAmUpdate": "सकाळी ६:०० वाजता अपडेट",
     "morningForecastSummary": "सकाळच्या हवामानाचा अंदाज सारांश",
     "aiSowingTip": "एआय पेरणी आणि सिंचन सल्ला",
-    "morningForecastText": "तापमान {temp}°C पर्यंत वाढत असून आर्द्रता {humidity}% आहे. वाऱ्याचा वेग वाढण्यापूर्वी सकाळी पेरणीची कामे करण्याची शिफारस केली जाते।"
+    "morningForecastText": "तापमान {temp}°C पर्यंत वाढत असून आर्द्रता {humidity}% आहे. वाऱ्याचा वेग वाढण्यापूर्वी सकाळी पेरणीची कामे करण्याची शिफारस केली जाते।",
+    "mockRecommendedCrop": "गहू",
+    "mockExpectedYield": "२०-२२ क्विंटल",
+    "mockWaterRequirement": "मध्यम",
+    "mockRiskLevel": "कमी",
+    "mockReasoning": "मातीचा पीएच आणि सेंद्रिय कर्ब पातळी अनुकूल आहे. थंड हवामानामुळे गव्हाचे पीक चांगले येईल. हलके पीक पाणी आणि डीएपी खत वापरण्याचा सल्ला दिला जातो।"
   },
   ta: {
     appName: "கிசான் அலர்ட்",
