@@ -20,6 +20,7 @@ export default function FarmerDashboard() {
   const [farms, setFarms] = useState<any[]>([]);
   const [selectedFarm, setSelectedFarm] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [smsEnabled, setSmsEnabled] = useState(false);
 
   // Modal triggers
   const [showCreateFarm, setShowCreateFarm] = useState(false);
@@ -504,9 +505,21 @@ export default function FarmerDashboard() {
               </span>
               ☀️ Daily 6:00 AM Sowing Briefing & Advisory
             </h3>
-            <span className="text-[10px] uppercase font-black bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full">
-              6:00 AM UPDATE
-            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setSmsEnabled(!smsEnabled)}
+                className={`text-[10px] uppercase font-black px-3 py-1.5 rounded-full border transition-all ${
+                  smsEnabled 
+                    ? 'bg-emerald-500 text-[#022c22] border-emerald-400 font-black' 
+                    : 'bg-emerald-950/60 text-emerald-300 border-emerald-500/20 hover:bg-emerald-900'
+                }`}
+              >
+                {smsEnabled ? "✅ SMS Alerts Enabled" : "📱 Enable SMS Alerts"}
+              </button>
+              <span className="text-[10px] uppercase font-black bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1.5 rounded-full">
+                6:00 AM UPDATE
+              </span>
+            </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="p-4 bg-emerald-950/60 rounded-2xl border border-emerald-500/10">

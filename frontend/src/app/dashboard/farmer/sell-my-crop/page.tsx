@@ -275,6 +275,7 @@ export default function SellMyCropPage() {
   // Interactive UI states
   const [contactedId, setContactedId] = useState<string | null>(null);
   const [interestedIds, setInterestedIds] = useState<string[]>([]);
+  const [smsEnabled, setSmsEnabled] = useState(false);
 
   // Chatbot states
   const [chatMessages, setChatMessages] = useState<any[]>([
@@ -434,11 +435,16 @@ export default function SellMyCropPage() {
             </p>
           </div>
           <div className="shrink-0 w-full md:w-auto">
-            {/* Future SMS Enabled Feature Placeholder Card */}
+            {/* Interactive SMS Enabled Feature Toggle */}
             <div className="bg-[#022c22]/80 border border-emerald-500/20 p-3 rounded-2xl flex items-center gap-2.5">
               <ShieldAlert className="w-4 h-4 text-emerald-400 shrink-0" />
-              <button disabled className="text-[10px] uppercase tracking-wider font-extrabold text-emerald-300/40 cursor-not-allowed">
-                {botText.futureSms}
+              <button 
+                onClick={() => setSmsEnabled(!smsEnabled)}
+                className={`text-[10px] uppercase tracking-wider font-extrabold transition-all ${
+                  smsEnabled ? 'text-emerald-400 font-black' : 'text-stone-300 hover:text-emerald-300'
+                }`}
+              >
+                {smsEnabled ? "✅ SMS Alerts Enabled" : "📱 Enable SMS Alerts"}
               </button>
             </div>
           </div>
