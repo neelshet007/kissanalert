@@ -73,7 +73,7 @@ We will deploy the Next.js app to **Vercel.com**, which handles Edge compiling a
      `npm install --legacy-peer-deps`
 5. Expand the **Environment Variables** panel and add:
    - **Key**: `NEXT_PUBLIC_API_URL`
-   - **Value**: `https://kisanalert-backend-api.onrender.com/api` *(Replace with your Render API URL from Step B, ensuring you append `/api` to the end)*
+   - **Value**: `https://kisanalert-backend-api.onrender.com` *(Replace with your Render API URL from Step B without adding /api)*
 6. Click **Deploy**.
 7. Vercel will compile the production dashboard assets and launch the website on a public URL (e.g., `https://kisanalert-frontend.vercel.app`).
 
@@ -85,8 +85,8 @@ Now that the database is live, we must apply migrations and seed the platform us
 1. In your local terminal, temporarily change your backend `.env` file's `DATABASE_URL` value to the **External Database URL** from Render.
 2. Open terminal in the `backend/` directory and run:
    ```bash
-   # Run Prisma migrations to set up tables in Render's database
-   npx prisma migrate deploy
+   # Push schema directly to setup tables in Render's database
+   npx prisma db push
 
    # Seed default users & records
    npm run db:seed

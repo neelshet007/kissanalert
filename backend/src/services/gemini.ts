@@ -135,9 +135,10 @@ export const AIService = {
       throw new Error('Gemini API Key is not configured. Please set GEMINI_API_KEY in environment variables.');
     }
     const targetModel = options.model || MODELS.DEFAULT;
+    const cleanModel = targetModel.replace(/^models\//, '');
     const finalPrompt = prompt + getMultilingualInstruction(options.langCode);
     return retryWithBackoff(async () => {
-      const model = aiClient.getGenerativeModel({ model: targetModel }, { apiVersion: 'v1beta' });
+      const model = aiClient.getGenerativeModel({ model: cleanModel }, { apiVersion: 'v1beta' });
       const result = await model.generateContent({
         contents: [{ role: 'user', parts: [{ text: finalPrompt }] }],
         generationConfig: options.maxOutputTokens ? { maxOutputTokens: options.maxOutputTokens } : undefined
@@ -154,9 +155,10 @@ export const AIService = {
       throw new Error('Gemini API Key is not configured. Please set GEMINI_API_KEY in environment variables.');
     }
     const targetModel = options.model || MODELS.DEFAULT;
+    const cleanModel = targetModel.replace(/^models\//, '');
     const finalPrompt = prompt + getMultilingualInstruction(options.langCode);
     return retryWithBackoff(async () => {
-      const model = aiClient.getGenerativeModel({ model: targetModel }, { apiVersion: 'v1beta' });
+      const model = aiClient.getGenerativeModel({ model: cleanModel }, { apiVersion: 'v1beta' });
       const result = await model.generateContent({
         contents: [{ role: 'user', parts: [{ text: finalPrompt }] }],
         generationConfig: {
@@ -177,9 +179,10 @@ export const AIService = {
       throw new Error('Gemini API Key is not configured. Please set GEMINI_API_KEY in environment variables.');
     }
     const targetModel = options.model || MODELS.DEFAULT;
+    const cleanModel = targetModel.replace(/^models\//, '');
     const finalPrompt = prompt + getMultilingualInstruction(options.langCode);
     return retryWithBackoff(async () => {
-      const model = aiClient.getGenerativeModel({ model: targetModel }, { apiVersion: 'v1beta' });
+      const model = aiClient.getGenerativeModel({ model: cleanModel }, { apiVersion: 'v1beta' });
       const result = await model.generateContent({
         contents: [{
           role: 'user',
