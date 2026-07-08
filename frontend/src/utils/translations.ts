@@ -161,7 +161,14 @@ export const translations: Record<string, Record<string, string>> = {
     "contact": "Contact",
     "interested": "Interested",
     "sellCropHeader": "Sell Your Crop",
-    "noBuyersAvailable": "No buyers are currently available nearby for this crop."
+    "noBuyersAvailable": "No buyers are currently available nearby for this crop.",
+    "sowingBriefingTitle": "Daily 6:00 AM Sowing Briefing & Advisory",
+    "enableSmsAlerts": "Enable SMS Alerts",
+    "smsAlertsEnabled": "SMS Alerts Enabled",
+    "sixAmUpdate": "6:00 AM UPDATE",
+    "morningForecastSummary": "Morning Forecast Summary",
+    "aiSowingTip": "AI Sowing & Irrigation Tip",
+    "morningForecastText": "Temperature is rising to {temp}°C with {humidity}% humidity. Sowing operations are highly recommended in the morning hours before wind speeds pick up."
   },
   hi: {
     appName: "किसान अलर्ट",
@@ -325,7 +332,14 @@ export const translations: Record<string, Record<string, string>> = {
     "contact": "संपर्क करें",
     "interested": "रुचि है",
     "sellCropHeader": "अपनी फसल बेचें",
-    "noBuyersAvailable": "इस फसल के लिए वर्तमान में कोई खरीदार उपलब्ध नहीं हैं।"
+    "noBuyersAvailable": "इस फसल के लिए वर्तमान में कोई खरीदार उपलब्ध नहीं हैं।",
+    "sowingBriefingTitle": "दैनिक सुबह 6:00 बजे बुवाई ब्रीफिंग और सलाह",
+    "enableSmsAlerts": "एसएमएस अलर्ट सक्षम करें",
+    "smsAlertsEnabled": "एसएमएस अलर्ट सक्षम",
+    "sixAmUpdate": "सुबह 6:00 बजे अपडेट",
+    "morningForecastSummary": "सुबह के पूर्वानुमान का सारांश",
+    "aiSowingTip": "एआई बुवाई और सिंचाई सलाह",
+    "morningForecastText": "तापमान {temp}°C तक बढ़ रहा है और {humidity}% आर्द्रता है। हवा की गति बढ़ने से पहले सुबह के समय बुवाई की सलाह दी जाती है।"
   },
   te: {
     appName: "కిసాన్ అలర్ట్",
@@ -489,7 +503,14 @@ export const translations: Record<string, Record<string, string>> = {
     "contact": "సంప్రదించండి",
     "interested": "ఆసక్తి ఉంది",
     "sellCropHeader": "మీ పంటను అమ్మండి",
-    "noBuyersAvailable": "ఈ పంట కోసం ప్రస్తుతం దగ్గరలో కొనుగోలుదారులు ఎవరూ అందుబాటులో లేరు."
+    "noBuyersAvailable": "ఈ పంట కోసం ప్రస్తుతం దగ్గరలో కొనుగోలుదారులు ఎవరూ అందుబాటులో లేరు.",
+    "sowingBriefingTitle": "రోజువారీ ఉదయం 6:00 గంటల విత్తడం మరియు సాగు సలహా",
+    "enableSmsAlerts": "SMS అలర్ట్‌లను ప్రారంభించండి",
+    "smsAlertsEnabled": "SMS అలర్ట్‌లు ప్రారంభించబడ్డాయి",
+    "sixAmUpdate": "ఉదయం 6:00 అప్‌డేట్",
+    "morningForecastSummary": "ఉదయం వాతావరణ సూచన సారాంశం",
+    "aiSowingTip": "AI విత్తడం & నీటిపారుదల చిట్కా",
+    "morningForecastText": "ఉష్ణోగ్రత {temp}°C కి పెరుగుతోంది మరియు {humidity}% తేమ ఉంది. గాలి వేగం పెరగకముందే ఉదయం వేళల్లో విత్తడం ప్రారంభించడం మంచిది।"
   },
   mr: {
     appName: "किसान अलर्ट",
@@ -653,7 +674,14 @@ export const translations: Record<string, Record<string, string>> = {
     "contact": "संपर्क साधा",
     "interested": "इच्छुक आहे",
     "sellCropHeader": "तुमचे पीक विका",
-    "noBuyersAvailable": "या पिकासाठी सध्या जवळ कोणताही खरेदीदार उपलब्ध नाही."
+    "noBuyersAvailable": "या पिकासाठी सध्या जवळ कोणताही खरेदीदार उपलब्ध नाही.",
+    "sowingBriefingTitle": "दैनिक सकाळी ६:०० वाजता पेरणी ब्रीफिंग आणि सल्ला",
+    "enableSmsAlerts": "एसएमएस अलर्ट सक्षम करा",
+    "smsAlertsEnabled": "एसएमएस अलर्ट सक्षम",
+    "sixAmUpdate": "सकाळी ६:०० वाजता अपडेट",
+    "morningForecastSummary": "सकाळच्या हवामानाचा अंदाज सारांश",
+    "aiSowingTip": "एआय पेरणी आणि सिंचन सल्ला",
+    "morningForecastText": "तापमान {temp}°C पर्यंत वाढत असून आर्द्रता {humidity}% आहे. वाऱ्याचा वेग वाढण्यापूर्वी सकाळी पेरणीची कामे करण्याची शिफारस केली जाते।"
   },
   ta: {
     appName: "கிசான் அலர்ட்",

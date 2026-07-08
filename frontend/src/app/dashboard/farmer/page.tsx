@@ -139,7 +139,10 @@ export default function FarmerDashboard() {
     try {
       // Weather
       const weatherRes = await axios.get(`${API_BASE_URL}/api/farms/${selectedFarm.id}/weather`, {
-        headers: { Authorization: `Bearer ${token || 'mock-jwt-token'}` }
+        headers: { 
+          Authorization: `Bearer ${token || 'mock-jwt-token'}`,
+          'x-user-language': currentLanguage
+        }
       });
       setWeatherAlert(weatherRes.data);
     } catch (_) {
@@ -206,7 +209,8 @@ export default function FarmerDashboard() {
         const response = await axios.post(`${API_BASE_URL}/api/farms/${selectedFarm.id}/soil-report-image`, formData, {
           headers: { 
             'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${token || 'mock-jwt-token'}` 
+            Authorization: `Bearer ${token || 'mock-jwt-token'}`,
+            'x-user-language': currentLanguage
           }
         });
         
@@ -224,7 +228,10 @@ export default function FarmerDashboard() {
         setShowSoilReport(false);
       } else {
         const response = await axios.post(`${API_BASE_URL}/api/farms/${selectedFarm.id}/soil-report`, soilForm, {
-          headers: { Authorization: `Bearer ${token || 'mock-jwt-token'}` }
+          headers: { 
+            Authorization: `Bearer ${token || 'mock-jwt-token'}`,
+            'x-user-language': currentLanguage
+          }
         });
         
         const updatedFarm = {
@@ -351,7 +358,8 @@ export default function FarmerDashboard() {
       const response = await axios.post(`${API_BASE_URL}/api/diseases/detect`, formData, {
         headers: { 
           'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token || 'mock-jwt-token'}` 
+          Authorization: `Bearer ${token || 'mock-jwt-token'}`,
+          'x-user-language': currentLanguage
         }
       });
       
@@ -503,7 +511,7 @@ export default function FarmerDashboard() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
               </span>
-              ☀️ Daily 6:00 AM Sowing Briefing & Advisory
+              ☀️ {t.sowingBriefingTitle || "Daily 6:00 AM Sowing Briefing & Advisory"}
             </h3>
             <div className="flex items-center gap-2">
               <button
@@ -514,22 +522,26 @@ export default function FarmerDashboard() {
                     : 'bg-emerald-950/60 text-emerald-300 border-emerald-500/20 hover:bg-emerald-900'
                 }`}
               >
-                {smsEnabled ? "✅ SMS Alerts Enabled" : "📱 Enable SMS Alerts"}
+                {smsEnabled ? (t.smsAlertsEnabled || "✅ SMS Alerts Enabled") : (t.enableSmsAlerts || "📱 Enable SMS Alerts")}
               </button>
               <span className="text-[10px] uppercase font-black bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1.5 rounded-full">
-                6:00 AM UPDATE
+                {t.sixAmUpdate || "6:00 AM UPDATE"}
               </span>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="p-4 bg-emerald-950/60 rounded-2xl border border-emerald-500/10">
-              <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Morning Forecast Summary</span>
+              <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">{t.morningForecastSummary || "Morning Forecast Summary"}</span>
               <p className="text-xs text-emerald-100 font-semibold mt-1">
-                Temperature is rising to {weatherAlert?.temperature ?? '31'}°C with {weatherAlert?.humidity ?? '75'}% humidity. Sowing operations are highly recommended in the morning hours before wind speeds pick up.
+                {t.morningForecastText
+                  ? t.morningForecastText
+                      .replace('{temp}', (weatherAlert?.temperature ?? '31').toString())
+                      .replace('{humidity}', (weatherAlert?.humidity ?? '75').toString())
+                  : `Temperature is rising to ${weatherAlert?.temperature ?? '31'}°C with ${weatherAlert?.humidity ?? '75'}% humidity. Sowing operations are highly recommended in the morning hours before wind speeds pick up.`}
               </p>
             </div>
             <div className="p-4 bg-emerald-950/60 rounded-2xl border border-emerald-500/10">
-              <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">AI Sowing & Irrigation Tip</span>
+              <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">{t.aiSowingTip || "AI Sowing & Irrigation Tip"}</span>
               <p className="text-xs text-emerald-100 font-semibold mt-1">
                 {weatherAlert?.advisory || 'Keep soil moisture levels steady. Crop vegetative phase requires consistent moisture monitoring.'}
               </p>

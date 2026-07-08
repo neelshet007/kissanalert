@@ -75,7 +75,7 @@ router.post('/:id/soil-report', authenticateJWT, async (req: AuthRequest, res: a
 
     // Fetch user language preference
     const user = await prisma.user.findUnique({ where: { id: req.user?.id } });
-    const userLanguage = user?.language || 'en';
+    const userLanguage = (req.headers['x-user-language'] as string) || user?.language || 'en';
 
     // Save report
     const soilReport = await prisma.soilReport.create({
@@ -151,7 +151,7 @@ router.post('/:id/soil-report-image', authenticateJWT, upload.single('image'), a
 
     // Fetch user language preference
     const user = await prisma.user.findUnique({ where: { id: req.user?.id } });
-    const userLanguage = user?.language || 'en';
+    const userLanguage = (req.headers['x-user-language'] as string) || user?.language || 'en';
 
     // Convert file to base64
     const base64Image = req.file.buffer.toString('base64');
@@ -228,8 +228,25 @@ router.get('/:id/weather', authenticateJWT, async (req: AuthRequest, res: any) =
       return res.status(404).json({ error: 'Farm not found' });
     }
 
+    // Fetch user language preference from headers or database
+    const user = await prisma.user.findUnique({ where: { id: req.user?.id } });
+    const userLanguage = (req.headers['x-user-language'] as string) || user?.language || 'en';
+
     // Get current weather from Open-Meteo
     const weatherData = await fetchWeatherData(farm.latitude, farm.longitude);
+
+    // Generate dynamic advisory via Gemini in the user's language preference
+    let aiAdvisory = '';
+    try {
+      aiAdvisory = await AIService.generateWeatherAdvice(
+        weatherData.temperature,
+        weatherData.rainfall,
+        userLanguage
+      );
+    } catch (geminiErr: any) {
+      console.warn(`Failed to generate Gemini advisory for Farm "${farm.name}", falling back to rule-based:`, geminiErr.message);
+      aiAdvisory = weatherData.advisory;
+    }
 
     // Save Weather Alert entry
     const weatherAlert = await prisma.weatherAlert.create({
@@ -239,7 +256,7 @@ router.get('/:id/weather', authenticateJWT, async (req: AuthRequest, res: any) =
         humidity: weatherData.humidity,
         rainfall: weatherData.rainfall,
         windSpeed: weatherData.windSpeed,
-        advisory: weatherData.advisory,
+        advisory: aiAdvisory || weatherData.advisory,
         warning: weatherData.warning || null,
       },
     });
@@ -250,7 +267,7 @@ router.get('/:id/weather', authenticateJWT, async (req: AuthRequest, res: any) =
         userId: farm.userId,
         type: 'WEATHER_ALERT',
         title: `${weatherData.warning} Alert`,
-        message: weatherData.advisory,
+        message: aiAdvisory || weatherData.advisory,
         channels: ['push']
       });
     }

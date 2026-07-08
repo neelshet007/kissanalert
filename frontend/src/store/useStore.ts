@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { API_BASE_URL } from '../utils/api';
 
 interface User {
   id: string;
@@ -58,7 +59,6 @@ export const useStore = create<AppState>((set) => ({
     const token = localStorage.getItem('kisan_token');
     if (token) {
       try {
-        const API_BASE_URL = 'http://localhost:5000';
         await fetch(`${API_BASE_URL}/api/auth/language`, {
           method: 'PUT',
           headers: {

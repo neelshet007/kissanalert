@@ -28,7 +28,7 @@ router.post('/detect', authenticateJWT, upload.single('image'), async (req: Auth
 
     // Fetch user language preference
     const user = await prisma.user.findUnique({ where: { id: req.user?.id } });
-    const userLanguage = user?.language || 'en';
+    const userLanguage = (req.headers['x-user-language'] as string) || user?.language || 'en';
 
     // Convert file to base64
     const base64Image = req.file.buffer.toString('base64');
