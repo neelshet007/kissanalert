@@ -3,6 +3,7 @@ dotenv.config();
 
 import app from './app';
 import { connectDB } from './config/db';
+import { initScheduler } from './services/scheduler';
 
 const PORT = process.env.PORT || 5000;
 
@@ -17,6 +18,7 @@ async function bootstrap() {
 
   app.listen(PORT, () => {
     console.log(`✅ Kisan Alert Backend running on http://localhost:${PORT}`);
+    initScheduler();
   });
 }
 

@@ -4,42 +4,12 @@ import prisma from '../config/db';
 import { authenticateJWT, AuthRequest } from '../middlewares/auth';
 import { AIService } from '../services/gemini';
 import { fetchWeatherData } from '../services/weather';
-import { triggerN8NWebhook } from '../services/n8n';
+import { sendNotification } from '../services/notification';
 
 const router = Router();
 const upload = multer({ limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB limit
 
 
-// GET ALL ACTIVE FARMS FOR n8n CRON ALERTS
-router.get('/active-list', async (req: any, res: any) => {
-  try {
-    const n8nHeaderKey = req.headers['x-n8n-api-key'];
-    const expectedKey = process.env.JWT_SECRET || 'super-secret-jwt-key-kisan-alert-local-dev';
-    
-    if (n8nHeaderKey !== expectedKey) {
-      return res.status(401).json({ error: 'Unauthorized: Invalid n8n API Key' });
-    }
-
-    const farms = await prisma.farm.findMany({
-      include: {
-        user: { select: { phone: true, name: true } }
-      }
-    });
-
-    const result = farms.map(f => ({
-      id: f.id,
-      name: f.name,
-      latitude: f.latitude,
-      longitude: f.longitude,
-      farmerPhone: f.user?.phone || '9876543210',
-      farmerName: f.user?.name || 'Ramesh'
-    }));
-
-    res.json(result);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-});
 
 // GET ALL FARMS FOR USER
 router.get('/', authenticateJWT, async (req: AuthRequest, res: Response) => {
@@ -274,14 +244,14 @@ router.get('/:id/weather', authenticateJWT, async (req: AuthRequest, res: any) =
       },
     });
 
-    // Trigger n8n notification if weather warning exists
+    // Trigger modular notification if weather warning exists
     if (weatherData.warning) {
-      await triggerN8NWebhook('WeatherAlert', {
-        farmId,
-        farmName: farm.name,
-        warning: weatherData.warning,
-        advisory: weatherData.advisory,
-        farmerId: farm.userId,
+      await sendNotification({
+        userId: farm.userId,
+        type: 'WEATHER_ALERT',
+        title: `${weatherData.warning} Alert`,
+        message: weatherData.advisory,
+        channels: ['push']
       });
     }
 

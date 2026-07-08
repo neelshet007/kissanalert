@@ -3,7 +3,7 @@ import multer from 'multer';
 import prisma from '../config/db';
 import { authenticateJWT, AuthRequest } from '../middlewares/auth';
 import { AIService } from '../services/gemini';
-import { triggerN8NWebhook } from '../services/n8n';
+import { sendNotification } from '../services/notification';
 import { Severity } from '@prisma/client';
 
 const router = Router();
@@ -78,13 +78,13 @@ router.post('/detect', authenticateJWT, upload.single('image'), async (req: Auth
         },
       });
 
-      // Notify Expert via n8n
-      await triggerN8NWebhook('ExpertEscalation', {
-        ticketId: ticket.id,
-        farmerName: req.user!.name,
-        diseaseName: report.diseaseName,
-        severity: report.severity,
-        expertEmail: expert?.email,
+      // Notify Expert via modular notification service
+      await sendNotification({
+        userId: req.user!.id,
+        type: 'EXPERT_ESCALATION',
+        title: `Disease Escalation: ${report.diseaseName}`,
+        message: `Expert review requested for ${report.diseaseName} (Severity: ${report.severity})`,
+        channels: ['push']
       });
     }
 
