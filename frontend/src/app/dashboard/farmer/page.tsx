@@ -6,7 +6,7 @@ import { useStore } from '../../../store/useStore';
 import { translations } from '../../../utils/translations';
 import { 
   Sprout, CloudRain, ShieldAlert, Mic, Thermometer, Droplets, Wind, 
-  Settings, LogOut, Compass, Plus, Landmark, CheckCircle, AlertTriangle, Globe
+  Settings, LogOut, Compass, Plus, Landmark, CheckCircle, AlertTriangle, Globe, Coins
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
@@ -406,6 +406,12 @@ export default function FarmerDashboard() {
                   <option value="te" className="bg-[#022c22]">తెలుగు</option>
                   <option value="mr" className="bg-[#022c22]">मराठी</option>
                   <option value="ta" className="bg-[#022c22]">தமிழ்</option>
+                  <option value="gu" className="bg-[#022c22]">ગુજરાતી</option>
+                  <option value="kn" className="bg-[#022c22]">ಕನ್ನಡ</option>
+                  <option value="ml" className="bg-[#022c22]">മലയാളം</option>
+                  <option value="pa" className="bg-[#022c22]">ਪੰਜਾਬੀ</option>
+                  <option value="bn" className="bg-[#022c22]">বাংলা</option>
+                  <option value="or" className="bg-[#022c22]">ଓଡ଼ିଆ</option>
                 </select>
               </div>
             </div>
@@ -431,6 +437,14 @@ export default function FarmerDashboard() {
             >
               <Plus className="w-4 h-4" />
               {t.createFarm}
+            </button>
+
+            <button 
+              onClick={() => router.push('/dashboard/farmer/sell-my-crop')}
+              className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-400 text-[#022c22] rounded-xl font-black text-xs flex items-center justify-center gap-2 transition-all shadow-md shadow-emerald-500/10 hover:shadow-emerald-500/25"
+            >
+              <Coins className="w-4 h-4" />
+              {t.sellMyCrop || "Sell My Crop"}
             </button>
           </div>
         </div>
@@ -480,6 +494,36 @@ export default function FarmerDashboard() {
           </div>
         </div>
 
+        {/* Daily 6:00 AM Sowing Briefing & Advisory */}
+        <div className="bg-gradient-to-r from-emerald-900/60 to-teal-900/40 backdrop-blur-xl p-6 rounded-3xl border border-emerald-500/20 shadow-xl space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="font-extrabold text-sm flex items-center gap-2 text-emerald-300">
+              <span className="flex h-2.5 w-2.5 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+              </span>
+              ☀️ Daily 6:00 AM Sowing Briefing & Advisory
+            </h3>
+            <span className="text-[10px] uppercase font-black bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full">
+              6:00 AM UPDATE
+            </span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-4 bg-emerald-950/60 rounded-2xl border border-emerald-500/10">
+              <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Morning Forecast Summary</span>
+              <p className="text-xs text-emerald-100 font-semibold mt-1">
+                Temperature is rising to {weatherAlert?.temperature ?? '31'}°C with {weatherAlert?.humidity ?? '75'}% humidity. Sowing operations are highly recommended in the morning hours before wind speeds pick up.
+              </p>
+            </div>
+            <div className="p-4 bg-emerald-950/60 rounded-2xl border border-emerald-500/10">
+              <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">AI Sowing & Irrigation Tip</span>
+              <p className="text-xs text-emerald-100 font-semibold mt-1">
+                {weatherAlert?.advisory || 'Keep soil moisture levels steady. Crop vegetative phase requires consistent moisture monitoring.'}
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Dashboard Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
@@ -498,22 +542,22 @@ export default function FarmerDashboard() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
               <div className="bg-emerald-950/40 p-4 rounded-2xl border border-emerald-500/5 flex flex-col items-center">
                 <Thermometer className="w-6 h-6 text-rose-400" />
-                <span className="text-[10px] font-bold text-emerald-300/70 mt-1.5">Temperature</span>
+                <span className="text-[10px] font-bold text-emerald-300/70 mt-1.5">{t.Temperature || "Temperature"}</span>
                 <p className="font-black text-xl text-white mt-0.5">{weatherAlert?.temperature ?? '31'}°C</p>
               </div>
               <div className="bg-emerald-950/40 p-4 rounded-2xl border border-emerald-500/5 flex flex-col items-center">
                 <Droplets className="w-6 h-6 text-sky-400" />
-                <span className="text-[10px] font-bold text-emerald-300/70 mt-1.5">Humidity</span>
+                <span className="text-[10px] font-bold text-emerald-300/70 mt-1.5">{t.Humidity || "Humidity"}</span>
                 <p className="font-black text-xl text-white mt-0.5">{weatherAlert?.humidity ?? '75'}%</p>
               </div>
               <div className="bg-emerald-950/40 p-4 rounded-2xl border border-emerald-500/5 flex flex-col items-center">
                 <CloudRain className="w-6 h-6 text-indigo-400" />
-                <span className="text-[10px] font-bold text-emerald-300/70 mt-1.5">Rainfall</span>
+                <span className="text-[10px] font-bold text-emerald-300/70 mt-1.5">{t.Rainfall || "Rainfall"}</span>
                 <p className="font-black text-xl text-white mt-0.5">{weatherAlert?.rainfall ?? '0'} mm</p>
               </div>
               <div className="bg-emerald-950/40 p-4 rounded-2xl border border-emerald-500/5 flex flex-col items-center">
                 <Wind className="w-6 h-6 text-teal-400" />
-                <span className="text-[10px] font-bold text-emerald-300/70 mt-1.5">Wind Speed</span>
+                <span className="text-[10px] font-bold text-emerald-300/70 mt-1.5">{t["Wind Speed"] || "Wind Speed"}</span>
                 <p className="font-black text-xl text-white mt-0.5">{weatherAlert?.windSpeed ?? '12'} km/h</p>
               </div>
             </div>
@@ -569,32 +613,32 @@ export default function FarmerDashboard() {
             {cropRec ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
                 <div className="p-4 bg-emerald-500/10 rounded-2xl border border-emerald-500/20">
-                  <span className="text-xs uppercase text-emerald-400 font-extrabold">Recommended Crop</span>
+                  <span className="text-xs uppercase text-emerald-400 font-extrabold">{t.recommendation || "Recommended Crop"}</span>
                   <p className="text-2xl font-black text-white mt-1">{t[cropRec.recommendedCrop] || cropRec.recommendedCrop}</p>
                   <div className="flex items-center gap-1.5 mt-2">
-                    <span className="text-[10px] text-emerald-300">Confidence:</span>
+                    <span className="text-[10px] text-emerald-300">{t.confidence || "Confidence"}:</span>
                     <span className="text-[10px] font-bold bg-emerald-500/25 px-2.5 py-0.5 rounded-full border border-emerald-500/30">{Math.round(cropRec.confidenceScore * 100)}%</span>
                   </div>
                 </div>
 
                 <div className="p-4 bg-emerald-950/40 rounded-2xl border border-emerald-500/5">
-                  <span className="text-xs uppercase text-emerald-300/70 font-extrabold">Expected Yield / Acre</span>
-                  <p className="text-lg font-black mt-1 text-white">{cropRec.expectedYield}</p>
+                  <span className="text-xs uppercase text-emerald-300/70 font-extrabold">{t.expectedYield || "Expected Yield"} / {t.Acre || "Acre"}</span>
+                  <p className="text-lg font-black mt-1 text-white">{t[cropRec.expectedYield] || cropRec.expectedYield}</p>
                 </div>
 
                 <div className="p-4 bg-emerald-950/40 rounded-2xl border border-emerald-500/5">
-                  <span className="text-xs uppercase text-emerald-300/70 font-extrabold">Water Requirement</span>
-                  <p className="text-lg font-black mt-1 text-white">{cropRec.waterRequirement}</p>
+                  <span className="text-xs uppercase text-emerald-300/70 font-extrabold">{t.waterRequirement || "Water Requirement"}</span>
+                  <p className="text-lg font-black mt-1 text-white">{t[cropRec.waterRequirement] || cropRec.waterRequirement}</p>
                 </div>
 
                 <div className="p-4 bg-emerald-950/40 rounded-2xl border border-emerald-500/5">
-                  <span className="text-xs uppercase text-emerald-300/70 font-extrabold">Risk Level</span>
-                  <p className={`text-lg font-black mt-1 ${cropRec.riskLevel.toLowerCase() === 'high' ? 'text-rose-400' : 'text-emerald-400'}`}>{cropRec.riskLevel}</p>
+                  <span className="text-xs uppercase text-emerald-300/70 font-extrabold">{t.riskLevel || "Risk Level"}</span>
+                  <p className={`text-lg font-black mt-1 ${cropRec.riskLevel.toLowerCase() === 'high' ? 'text-rose-400' : 'text-emerald-400'}`}>{t[cropRec.riskLevel] || cropRec.riskLevel}</p>
                 </div>
 
                 <div className="col-span-1 md:col-span-2 lg:col-span-4 p-4 bg-emerald-950/50 border border-emerald-500/10 rounded-2xl">
-                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">AI Agronomist Sowing Reason</span>
-                  <p className="text-sm text-emerald-100 mt-1.5 leading-relaxed font-semibold">{cropRec.reasoning}</p>
+                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">{t.aiRecommendation || "AI Recommendation"}</span>
+                  <p className="text-sm text-emerald-100 mt-1.5 leading-relaxed font-semibold">{t[cropRec.reasoning] || cropRec.reasoning}</p>
                 </div>
               </div>
             ) : (
@@ -622,7 +666,10 @@ export default function FarmerDashboard() {
               exit={{ scale: 0.95 }}
               className="bg-[#064e3b] rounded-3xl p-6 w-full max-w-md space-y-4 border border-emerald-500/20 text-white"
             >
-              <h3 className="font-extrabold text-xl">{t.createFarm}</h3>
+              <div className="flex justify-between items-center pb-2">
+                <h3 className="font-extrabold text-xl">{t.createFarm}</h3>
+                <button type="button" onClick={() => setShowCreateFarm(false)} className="text-emerald-300 hover:text-white transition-all text-xl font-bold">&times;</button>
+              </div>
               <form onSubmit={handleCreateFarm} className="space-y-3">
                 <div className="space-y-1">
                   <label className="text-xs uppercase font-bold text-emerald-300">Farm Name</label>
@@ -707,7 +754,10 @@ export default function FarmerDashboard() {
               exit={{ scale: 0.95 }}
               className="bg-[#064e3b] rounded-3xl p-6 w-full max-w-lg space-y-4 border border-emerald-500/20 text-white"
             >
-              <h3 className="font-extrabold text-xl">{t.uploadSoil}</h3>
+              <div className="flex justify-between items-center pb-2">
+                <h3 className="font-extrabold text-xl">{t.uploadSoil}</h3>
+                <button type="button" onClick={() => setShowSoilReport(false)} className="text-emerald-300 hover:text-white transition-all text-xl font-bold">&times;</button>
+              </div>
               
               {/* Tab Selector */}
               <div className="grid grid-cols-2 gap-2 p-1 bg-emerald-950/60 rounded-xl border border-emerald-500/10">
@@ -853,7 +903,10 @@ export default function FarmerDashboard() {
               exit={{ scale: 0.95 }}
               className="bg-[#064e3b] rounded-3xl p-6 w-full max-w-lg space-y-4 border border-emerald-500/20 text-white max-h-[85vh] overflow-y-auto"
             >
-              <h3 className="font-extrabold text-xl">{t.diseaseDetection}</h3>
+              <div className="flex justify-between items-center pb-2">
+                <h3 className="font-extrabold text-xl">{t.diseaseDetection}</h3>
+                <button type="button" onClick={() => setShowDiseaseDetect(false)} className="text-emerald-300 hover:text-white transition-all text-xl font-bold">&times;</button>
+              </div>
               
               {!diseaseReport ? (
                 <div className="space-y-4">

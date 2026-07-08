@@ -26,12 +26,16 @@ router.post('/detect', authenticateJWT, upload.single('image'), async (req: Auth
       return res.status(404).json({ error: 'Farm not found' });
     }
 
+    // Fetch user language preference
+    const user = await prisma.user.findUnique({ where: { id: req.user?.id } });
+    const userLanguage = user?.language || 'en';
+
     // Convert file to base64
     const base64Image = req.file.buffer.toString('base64');
     const mimeType = req.file.mimetype;
 
     // Detect disease using Gemini Vision
-    const detection = await AIService.diagnoseCropDisease(base64Image, mimeType);
+    const detection = await AIService.diagnoseCropDisease(base64Image, mimeType, userLanguage);
 
     // Save report to database
     // Handle mock url or save local reference (in production upload to Cloudinary/S3)

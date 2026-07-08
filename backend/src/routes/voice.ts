@@ -18,8 +18,12 @@ router.post('/query', authenticateJWT, async (req: AuthRequest, res: any) => {
       return res.status(404).json({ error: 'Farm not found' });
     }
 
+    // Fetch user language preference
+    const user = await prisma.user.findUnique({ where: { id: req.user?.id } });
+    const userLanguage = language || user?.language || 'en';
+
     // Call Gemini voice assistant processor
-    const aiResponse = await AIService.voiceConversation(transcription, language || 'en');
+    const aiResponse = await AIService.voiceConversation(transcription, userLanguage);
 
     // Create database entry for VoiceMessage
     const voiceMessage = await prisma.voiceMessage.create({

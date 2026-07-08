@@ -87,6 +87,12 @@ export default function AdminDashboard() {
                   <option value="te" className="bg-[#022c22]">తెలుగు</option>
                   <option value="mr" className="bg-[#022c22]">मराठी</option>
                   <option value="ta" className="bg-[#022c22]">தமிழ்</option>
+                  <option value="gu" className="bg-[#022c22]">ગુજરાતી</option>
+                  <option value="kn" className="bg-[#022c22]">ಕನ್ನಡ</option>
+                  <option value="ml" className="bg-[#022c22]">മലയാളം</option>
+                  <option value="pa" className="bg-[#022c22]">ਪੰਜਾਬੀ</option>
+                  <option value="bn" className="bg-[#022c22]">বাংলা</option>
+                  <option value="or" className="bg-[#022c22]">ଓଡ଼ିଆ</option>
                 </select>
               </div>
             </div>

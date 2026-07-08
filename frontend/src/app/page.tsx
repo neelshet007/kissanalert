@@ -66,6 +66,12 @@ export default function LandingPage() {
               <option value="te" className="bg-[#022c22] text-stone-200">తెలుగు</option>
               <option value="mr" className="bg-[#022c22] text-stone-200">मराठी</option>
               <option value="ta" className="bg-[#022c22] text-stone-200">தமிழ்</option>
+              <option value="gu" className="bg-[#022c22] text-stone-200">ગુજરાતી</option>
+              <option value="kn" className="bg-[#022c22] text-stone-200">ಕನ್ನಡ</option>
+              <option value="ml" className="bg-[#022c22] text-stone-200">മലയാളം</option>
+              <option value="pa" className="bg-[#022c22] text-stone-200">ਪੰਜਾਬੀ</option>
+              <option value="bn" className="bg-[#022c22] text-stone-200">বাংলা</option>
+              <option value="or" className="bg-[#022c22] text-stone-200">ଓଡ଼ିଆ</option>
             </select>
           </div>
           <Link href="/auth/login" className="bg-emerald-500 hover:bg-emerald-600 text-[#022c22] font-black px-6 py-2 rounded-xl transition-all shadow-md shadow-emerald-500/10">
@@ -76,6 +82,11 @@ export default function LandingPage() {
 
       {/* Hero Section */}
       <main className="flex-1 max-w-7xl mx-auto px-6 py-12 md:py-24 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
+        {/* Prototype Banner */}
+        <div className="lg:col-span-2 bg-[#022c22]/60 border border-emerald-500/20 text-emerald-300 text-xs px-6 py-3 rounded-2xl flex items-center justify-between gap-4 font-semibold shadow-inner">
+          <p>💡 <strong>Developer Note:</strong> This is a prototype demonstration platform. It includes mock agronomist data, local offline databases, and sandbox API profiles. No real financial or agricultural crop transactions are performed.</p>
+        </div>
+
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}

@@ -128,4 +128,30 @@ router.get('/me', authenticateJWT, async (req: AuthRequest, res: Response) => {
   }
 });
 
+// UPDATE LANGUAGE PREFERENCE
+router.put('/language', authenticateJWT, async (req: AuthRequest, res: Response) => {
+  try {
+    const { language } = req.body;
+    if (!language) {
+      return res.status(400).json({ error: 'Language is required' });
+    }
+    const user = await prisma.user.update({
+      where: { id: req.user?.id },
+      data: { language },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        role: true,
+        language: true,
+      }
+    });
+    res.json(user);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;
+

@@ -103,6 +103,10 @@ router.post('/:id/soil-report', authenticateJWT, async (req: AuthRequest, res: a
       return res.status(404).json({ error: 'Farm not found' });
     }
 
+    // Fetch user language preference
+    const user = await prisma.user.findUnique({ where: { id: req.user?.id } });
+    const userLanguage = user?.language || 'en';
+
     // Save report
     const soilReport = await prisma.soilReport.create({
       data: {
@@ -138,7 +142,7 @@ router.post('/:id/soil-report', authenticateJWT, async (req: AuthRequest, res: a
       groundwater: farm.groundwater,
       season: season || 'Kharif',
       soilType: farm.soilType,
-    });
+    }, userLanguage);
 
     // Save Crop Recommendation
     const cropRec = await prisma.cropRecommendation.create({
@@ -175,12 +179,16 @@ router.post('/:id/soil-report-image', authenticateJWT, upload.single('image'), a
       return res.status(404).json({ error: 'Farm not found' });
     }
 
+    // Fetch user language preference
+    const user = await prisma.user.findUnique({ where: { id: req.user?.id } });
+    const userLanguage = user?.language || 'en';
+
     // Convert file to base64
     const base64Image = req.file.buffer.toString('base64');
     const mimeType = req.file.mimetype;
 
     // Extract chemical values from image using Gemini Vision
-    const extractedData = await AIService.extractSoilReport(base64Image, mimeType);
+    const extractedData = await AIService.extractSoilReport(base64Image, mimeType, userLanguage);
 
     // Save report
     const soilReport = await prisma.soilReport.create({
@@ -217,7 +225,7 @@ router.post('/:id/soil-report-image', authenticateJWT, upload.single('image'), a
       groundwater: farm.groundwater,
       season: season || 'Kharif',
       soilType: farm.soilType,
-    });
+    }, userLanguage);
 
     // Save Crop Recommendation
     const cropRec = await prisma.cropRecommendation.create({

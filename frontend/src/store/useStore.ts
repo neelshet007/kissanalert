@@ -41,9 +41,25 @@ export const useStore = create<AppState>((set) => ({
     set({ user, token });
   },
 
-  setLanguage: (lang) => {
+  setLanguage: async (lang) => {
     localStorage.setItem('kisan_lang', lang);
     set({ currentLanguage: lang });
+    const token = localStorage.getItem('kisan_token');
+    if (token) {
+      try {
+        const API_BASE_URL = 'http://localhost:5000';
+        await fetch(`${API_BASE_URL}/api/auth/language`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ language: lang })
+        });
+      } catch (err) {
+        console.error('Failed to save language preference on backend:', err);
+      }
+    }
   },
 
   setActiveFarmId: (farmId) => set({ activeFarmId: farmId }),
