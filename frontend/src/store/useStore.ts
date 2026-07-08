@@ -31,19 +31,30 @@ export const useStore = create<AppState>((set) => ({
   isOffline: false,
 
   setUser: (user, token) => {
-    if (token) {
+    if (token && user) {
       localStorage.setItem('kisan_token', token);
       localStorage.setItem('kisan_user', JSON.stringify(user));
+      localStorage.setItem('kisan_lang', user.language || 'en');
+      set({ user, token, currentLanguage: user.language || 'en' });
     } else {
       localStorage.removeItem('kisan_token');
       localStorage.removeItem('kisan_user');
+      set({ user: null, token: null });
     }
-    set({ user, token });
   },
 
   setLanguage: async (lang) => {
     localStorage.setItem('kisan_lang', lang);
-    set({ currentLanguage: lang });
+    
+    // Update local state (currentLanguage and language field inside the user object)
+    set((state) => {
+      const updatedUser = state.user ? { ...state.user, language: lang } : null;
+      if (updatedUser) {
+        localStorage.setItem('kisan_user', JSON.stringify(updatedUser));
+      }
+      return { currentLanguage: lang, user: updatedUser };
+    });
+
     const token = localStorage.getItem('kisan_token');
     if (token) {
       try {

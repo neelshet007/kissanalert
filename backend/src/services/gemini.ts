@@ -67,7 +67,7 @@ Translate the following:
 - Weather conditions (e.g. Heavy Rain -> मुसळधार पाऊस, Light Rain -> हलका पाऊस, Dry Spell -> कोरडा काळ, Humidity -> आर्द्रता, Wind Speed -> वाऱ्याचा वेग, Temperature -> तापमान)
 - Sowing/irrigation advice, explanation, and agricultural recommendations.
 - All JSON schema keys must remain in English (e.g. "recommendedCrop", "confidenceScore", "reasoning", "waterRequirement", "expectedYield", "riskLevel", "diseaseName", "severity", "treatment", "suggestedFertilizer", "suggestedPesticide", "expertEscalationRequired", "englishResponse", "translatedResponse"), but ALL JSON string values must be translated entirely to ${langName}.
-- Localize all numbers into ${langName} numerals if standard in the script (e.g. 25.5 -> २५.५, 1000 -> १०००).
+- For regular conversational text, you may localize numbers into ${langName} numerals if standard in the script (e.g. 25.5 -> २५.५, 1000 -> १०००). However, for any JSON output/responses, all numbers (including floats and integers) MUST remain in standard Arabic numerals (0-9) (e.g. 25.5, 0.85) to ensure valid JSON formatting.
 - Localize currency symbols and formatting (e.g. ₹1000 -> ₹१,०००).
 - Localize dates, weekdays, and month names (e.g. Monday -> सोमवार, July -> जुलै).
 - Localize all assessment labels (e.g. 'Low' -> 'कमी', 'Medium' -> 'मध्यम', 'High' -> 'उच्च', 'Suitable' -> 'योग्य', 'Not Suitable' -> 'अयोग्य', 'Highly Recommended' -> 'अत्यंत शिफारस केलेले', 'Risky' -> 'धोकादायक', 'Kharif' -> 'खरीप', 'Rabi' -> 'रब्बी', 'Zaid' -> 'उन्हाळी/झैद').
@@ -314,8 +314,7 @@ Respond in strict JSON format:
     try {
       const response = await this.analyzeImage(prompt, imageBase64, mimeType, { 
         model: MODELS.DEFAULT,
-        responseMimeType: 'application/json',
-        langCode
+        responseMimeType: 'application/json'
       });
       return cleanAndParseJSON(response);
     } catch (error: any) {

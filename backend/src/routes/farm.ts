@@ -158,7 +158,7 @@ router.post('/:id/soil-report-image', authenticateJWT, upload.single('image'), a
     const mimeType = req.file.mimetype;
 
     // Extract chemical values from image using Gemini Vision
-    const extractedData = await AIService.extractSoilReport(base64Image, mimeType, userLanguage);
+    const extractedData = await AIService.extractSoilReport(base64Image, mimeType);
 
     // Save report
     const soilReport = await prisma.soilReport.create({
